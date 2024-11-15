@@ -1,0 +1,170 @@
+phases = [
+	{
+		startMessage = {"bold":true,"color":"gold","text":"Waiting has started and will last for !"}
+		displayName = "Waiting"
+		endMessage = {"bold":true,"color":"red","text":"Waiting has ended!"}
+		flags = [
+			"INVULN"
+			"INFINITE_CLASS_SWAP"
+			"WAITING_BOX"
+		]
+		periodSeconds = -1
+		warningIntervals = [
+			1200
+			20
+			900
+			5
+			120
+			600
+			1800
+			10
+			60
+			300
+		]
+		key = "waiting"
+	}
+	{
+		startMessage = {"bold":true,"color":"gold","text":"Starting has started and will last for !"}
+		displayName = "Starting"
+		endMessage = {"bold":true,"color":"red","text":"Starting has ended!"}
+		flags = [
+			"INVULN"
+			"INFINITE_CLASS_SWAP"
+			"INITIALIZER"
+		]
+		periodSeconds = 30
+		warningIntervals = [
+			1200
+			20
+			900
+			5
+			120
+			600
+			1800
+			10
+			60
+			300
+		]
+		key = "starting"
+	}
+	{
+		startMessage = {"bold":true,"color":"gold","text":"Preparation has started and will last for !"}
+		displayName = "Preparation"
+		endMessage = {"bold":true,"color":"red","text":"Preparation has ended!"}
+		flags = [
+			"ONE_CLASS_SWAP"
+			"RESTRICTED"
+			"HOME"
+			"IN_PLAY"
+		]
+		periodSeconds = 1800
+		warningIntervals = [
+			1200
+			20
+			900
+			5
+			120
+			600
+			1800
+			10
+			60
+			300
+		]
+		key = "preparation1"
+	}
+	{
+		startMessage = {"bold":true,"color":"gold","text":"Combat has started and will last for !"}
+		displayName = "Combat"
+		endMessage = {"bold":true,"color":"red","text":"Combat has ended!"}
+		flags = [
+			"TIME_LOSS"
+			"IN_PLAY"
+		]
+		periodSeconds = 900
+		warningIntervals = [
+			1200
+			20
+			900
+			5
+			120
+			600
+			1800
+			10
+			60
+			300
+		]
+		key = "combat1"
+	}
+	{
+		startMessage = {"bold":true,"color":"gold","text":"Preparation has started and will last for !"}
+		displayName = "Preparation"
+		endMessage = {"bold":true,"color":"red","text":"Preparation has ended!"}
+		flags = [
+			"ONE_CLASS_SWAP"
+			"RESTRICTED"
+			"HOME"
+			"IN_PLAY"
+		]
+		periodSeconds = 1200
+		warningIntervals = [
+			1200
+			20
+			900
+			5
+			120
+			600
+			1800
+			10
+			60
+			300
+		]
+		key = "preparation2"
+	}
+	{
+		startMessage = {"bold":true,"color":"gold","text":"Combat has started and will last for !"}
+		displayName = "Combat"
+		endMessage = {"bold":true,"color":"red","text":"Combat has ended!"}
+		flags = [
+			"IN_PLAY"
+		]
+		periodSeconds = 1800
+		warningIntervals = [
+			1200
+			20
+			900
+			5
+			120
+			600
+			1800
+			10
+			60
+			300
+		]
+		key = "combat2"
+	}
+	{
+		startMessage = {"bold":true,"color":"gold","text":"Finished has started and will last for !"}
+		displayName = "Finished"
+		endMessage = {"bold":true,"color":"red","text":"Finished has ended!"}
+		flags = [
+			"INFINITE_CLASS_SWAP"
+			"HOME"
+			"FINISHER"
+			"IN_PLAY"
+		]
+		periodSeconds = -1
+		warningIntervals = [
+			1200
+			20
+			900
+			5
+			120
+			600
+			1800
+			10
+			60
+			300
+		]
+		key = "finished"
+	}
+]

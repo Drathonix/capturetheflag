@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "W": "minecraft:bucket",
+    "C": "minecraft:copper_ingot",
+    "B": "minecraft:copper_block"
+  },
+  "pattern": [
+    "CWC",
+    "BWB",
+    " B "
+  ],
+  "show_notification": true,
+  "result": {
+    "count": 1,
+    "id": "minecraft:bucket",
+    "components": {
+      "minecraft:custom_data": {
+        "ctf_soul_bound": 3,
+        "ctf_custom_item": "BIGBUCKET"
+      },
+      "minecraft:item_name": "{\"text\": \"Bottomless Bucket\",\"color\": \"gray\",\"bold\":true}",
+      "minecraft:lore": [
+        "{\"text\":\"Soulbound 3\",\"color\":\"light_purple\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Only craftable by Architects\",\"color\":\"yellow\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Infinitely empty, never fills.\",\"color\":\"yellow\",\"italic\":false}"
+      ]
+    }
+  }
+}

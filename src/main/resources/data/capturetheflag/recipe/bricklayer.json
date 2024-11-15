@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": "minecraft:diamond",
+    "C": "minecraft:copper_ingot",
+    "S": "minecraft:iron_shovel",
+    "B": "minecraft:stone_bricks"
+  },
+  "pattern": [
+    "CBD",
+    "CSB",
+    "SCC"
+  ],
+  "show_notification": true,
+  "result": {
+    "count": 1,
+    "id": "minecraft:netherite_shovel",
+    "components": {
+      "minecraft:custom_data": {
+        "ctf_soul_bound": 3,
+        "ctf_custom_item": "BRICKLAYER"
+      },
+      "minecraft:item_name": "{\"text\": \"Bricklayer\",\"color\": \"gold\",\"bold\":true}",
+      "minecraft:lore": [
+        "{\"text\":\"Soulbound 3\",\"color\":\"light_purple\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Only craftable by Architects\",\"color\":\"yellow\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Extends block reach by 2 (*1)\",\"color\":\"yellow\",\"italic\":false}",
+        "{\"text\":\"Places 6 (*3) blocks at once towards you.\",\"color\":\"yellow\",\"italic\":false}",
+        "{\"text\":\"This item's ability only works in the offhand.\",\"color\":\"yellow\",\"italic\":false}",
+        "{\"text\":\"'*' indicates the value for non-architects\",\"color\":\"yellow\"}"
+      ]
+    }
+  }
+}

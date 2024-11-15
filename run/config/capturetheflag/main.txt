@@ -1,0 +1,77 @@
+//The base level cost for each enchantment.
+enchantmentToLevelBase = {
+	minecraft.efficiency = 4
+	minecraft.sweeping_edge = 5
+	minecraft.quick_charge = 8
+	minecraft.density = 12
+	minecraft.breach = 6
+	minecraft.flame = 16
+	minecraft.fortune = 8
+	minecraft.multishot = 12
+	minecraft.channeling = 12
+	minecraft.loyalty = 1
+	minecraft.punch = 6
+	minecraft.projectile_protection = 3
+	minecraft.power = 6
+	minecraft.sharpness = 6
+	minecraft.respiration = 3
+	minecraft.protection = 4
+	minecraft.piercing = 6
+	minecraft.feather_falling = 4
+	minecraft.unbreaking = 2
+	minecraft.swift_sneak = 3
+	minecraft.fire_aspect = 8
+	minecraft.knockback = 6
+	minecraft.depth_strider = 4
+	minecraft.wind_burst = 12
+	minecraft.infinity = 12
+	minecraft.thorns = 12
+}
+/*Time in seconds during which a flag is immune to being stolen after it
+ has either been dropped (on death) or captured*/
+stealFlagCooldownTime = 30
+//Number of flags to win.
+winCondition = 3
+//Icons for enchantments in the holy enchanter
+enchantmentToItem = {
+	minecraft.efficiency = minecraft.golden_pickaxe
+	minecraft.sweeping_edge = minecraft.golden_sword
+	minecraft.quick_charge = minecraft.string
+	minecraft.density = minecraft.heavy_core
+	minecraft.breach = minecraft.tnt
+	minecraft.flame = minecraft.flint_and_steel
+	minecraft.fortune = minecraft.emerald
+	minecraft.multishot = minecraft.slime_ball
+	minecraft.channeling = minecraft.lightning_rod
+	minecraft.loyalty = minecraft.bone
+	minecraft.punch = minecraft.piston
+	minecraft.projectile_protection = minecraft.arrow
+	minecraft.power = minecraft.spectral_arrow
+	minecraft.sharpness = minecraft.iron_sword
+	minecraft.respiration = minecraft.glass_bottle
+	minecraft.protection = minecraft.iron_chestplate
+	minecraft.piercing = minecraft.spectral_arrow
+	minecraft.feather_falling = minecraft.feather
+	minecraft.unbreaking = minecraft.obsidian
+	minecraft.swift_sneak = minecraft.sculk
+	minecraft.fire_aspect = minecraft.flint_and_steel
+	minecraft.knockback = minecraft.piston
+	minecraft.depth_strider = minecraft.firework_rocket
+	minecraft.wind_burst = minecraft.wind_charge
+	minecraft.infinity = minecraft.end_portal_frame
+	minecraft.thorns = minecraft.sweet_berries
+}
+/*These recipes cannot be crafted by crafters and players without
+ permissions.*/
+protectedRecipes = [
+	capturetheflag/bigbucket
+	capturetheflag/trident
+	capturetheflag/bricklayer
+	capturetheflag/blastpickaxe
+	capturetheflag/longbow
+	minecraft/blast_furnace
+	capturetheflag/reflectorshield
+	minecraft/crossbow
+	minecraft/mace
+	capturetheflag/bigbucketempty
+]

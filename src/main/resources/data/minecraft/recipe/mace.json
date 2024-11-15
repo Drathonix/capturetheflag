@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": "minecraft:diamond_block",
+    "B": "minecraft:iron_block",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "BDB",
+    " I ",
+    " I "
+  ],
+  "result": {
+    "count": 1,
+    "id": "minecraft:mace",
+    "components": {
+      "minecraft:custom_data": {
+        "ctf_soul_bound": 3,
+        "ctf_custom_item": "MACE"
+      },
+      "minecraft:item_name": "{\"text\": \"Heavy Mace\",\"color\": \"aqua\",\"bold\":true}",
+      "minecraft:lore": [
+        "{\"text\":\"Soulbound 3\",\"color\":\"light_purple\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Only craftable by Slayers\",\"color\":\"yellow\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Deals bonus damage depending on how far you fall.\",\"color\":\"yellow\",\"italic\":false}",
+        "{\"text\":\"Negates fall damage on a successful hit\",\"color\":\"yellow\",\"italic\":false}"
+      ]
+    }
+  }
+}

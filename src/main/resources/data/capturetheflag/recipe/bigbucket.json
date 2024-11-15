@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "W": "minecraft:water_bucket",
+    "C": "minecraft:copper_ingot",
+    "B": "minecraft:copper_block"
+  },
+  "pattern": [
+    "CWC",
+    "BWB",
+    " B "
+  ],
+  "show_notification": true,
+  "result": {
+    "count": 1,
+    "id": "minecraft:water_bucket",
+    "components": {
+      "minecraft:custom_data": {
+        "ctf_soul_bound": 3,
+        "ctf_custom_item": "BIGBUCKET"
+      },
+      "minecraft:item_name": "{\"text\": \"Bottomless Water Bucket\",\"color\": \"blue\",\"bold\":true}",
+      "minecraft:lore": [
+        "{\"text\":\"Soulbound 3\",\"color\":\"light_purple\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Only craftable by Architects\",\"color\":\"yellow\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Infinite water bucket.\",\"color\":\"yellow\",\"italic\":false}",
+        "{\"text\":\"This is more powerful than you'd think.\",\"color\":\"yellow\",\"italic\":false}"
+      ]
+    }
+  }
+}

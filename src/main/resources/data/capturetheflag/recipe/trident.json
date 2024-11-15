@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "D": "minecraft:diamond"
+  },
+  "pattern": [
+    " DD",
+    " ID",
+    "I  "
+  ],
+  "show_notification": true,
+  "result": {
+    "count": 1,
+    "id": "minecraft:trident",
+    "components": {
+      "minecraft:custom_data": {
+        "ctf_soul_bound": 3,
+        "ctf_custom_item": "TRIDENT"
+      },
+      "minecraft:item_name": "{\"text\": \"Trident\",\"color\": \"red\",\"bold\":true}",
+      "minecraft:lore": [
+        "{\"text\":\"Soulbound 3\",\"color\":\"light_purple\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Only craftable by Rangers\",\"color\":\"yellow\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"A loyal trident. Has 15% (*7.5%) armor piercing damage only when thrown.\",\"color\":\"yellow\",\"italic\":false}",
+        "{\"text\":\"'*' indicates the value for non-rangers\",\"color\":\"yellow\"}"
+      ]
+    }
+  }
+}

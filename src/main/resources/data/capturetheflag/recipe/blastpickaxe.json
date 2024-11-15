@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": "minecraft:blast_furnace",
+    "S": "minecraft:diamond_pickaxe",
+    "B": "minecraft:gunpowder"
+  },
+  "pattern": [
+    "BDB",
+    " S ",
+    " S "
+  ],
+  "show_notification": true,
+  "result": {
+    "count": 1,
+    "id": "minecraft:netherite_pickaxe",
+    "components": {
+      "minecraft:custom_data": {
+        "ctf_soul_bound": 3,
+        "ctf_custom_item": "BLASTPICKAXE"
+      },
+      "minecraft:item_name": "{\"text\": \"Blast Pickaxe\",\"color\": \"gold\",\"bold\":true}",
+      "minecraft:lore": [
+        "{\"text\":\"Soulbound 3\",\"color\":\"light_purple\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Only craftable by  Breakers\",\"color\":\"yellow\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Breaks a 3x3 area\",\"color\":\"yellow\",\"italic\":false}",
+        "{\"text\":\"Still consumes durability as if every block was manually broken.\",\"color\":\"yellow\",\"italic\":false}",
+        "{\"text\":\"Only Breakers can enchant this item and it has reduced enchantability.\",\"color\":\"yellow\",\"italic\":false}"
+      ]
+    }
+  }
+}

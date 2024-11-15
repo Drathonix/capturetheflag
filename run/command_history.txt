@@ -1,0 +1,50 @@
+/kill
+/waiting
+/give Player206 minecraft:barrier
+/give Player850 minecraft:barrier
+/waiting
+/spawnpoint
+/ctfstart
+/waiting
+/forceteam RED Player68
+/class
+/ctfstart
+/gamemode survival
+/gamemode creative
+/gamemode survival
+/gamemode creative
+/waiting
+/ctfstart
+/waiting
+/forceteam RED Player946
+/ctfstart
+/waiting
+/forceteam RED Player946
+/forceteam RED @a
+/ctfstart
+/waiting
+/forceteam RED
+/forceteam RED @a
+/ctfstart
+/waiting
+/forceteam RED @a
+/ctfstart
+/waiting
+/ctfstart
+/waiting
+/start
+/forceteam RED @a
+/gamemode creative
+/plustime -120278
+/plustime 217893217
+/kill
+/gamemode survival
+/gamemode creative
+/gamemode survival
+/gamemode creative
+/waiting
+/forceteam RED @a
+/start
+/time set 0
+/time set noon
+/kill

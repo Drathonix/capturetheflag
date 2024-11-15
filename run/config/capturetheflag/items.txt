@@ -1,0 +1,14 @@
+tridentArmorPierceRanger = 0.15
+tridentArmorPierce = 0.075
+reflectorShieldPower = 0.04
+//Requires restart to apply
+brickLayerRangeBoost = 1
+brickLayerPlacement = 3
+longBowDamageMultiplier = 0.36
+longBowVelocityMultiplierRanger = 2.0
+longBowDamageMultiplierRanger = 0.45
+//Requires restart to apply
+brickLayerRangeBoostBuilder = 3
+longBowVelocityMultiplier = 1.5
+reflectorShieldPowerWarrior = 0.075
+brickLayerPlacementBuilder = 6

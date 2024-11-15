@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": "minecraft:diamond",
+    "S": "minecraft:shield",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    " ID",
+    "ISD",
+    " ID"
+  ],
+  "show_notification": true,
+  "result": {
+    "count": 1,
+    "id": "minecraft:shield",
+    "components": {
+      "minecraft:custom_data": {
+        "ctf_soul_bound": 3,
+        "ctf_custom_item": "REFLECTORSHIELD"
+      },
+      "minecraft:item_name": "{\"text\": \"Mirror Shield\",\"color\": \"aqua\",\"bold\":true}",
+      "minecraft:lore": [
+        "{\"text\":\"Soulbound 3\",\"color\":\"light_purple\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Only craftable by Slayers\",\"color\":\"yellow\",\"italic\":false,\"bold\":true}",
+        "{\"text\":\"Reflects 7.5% (*4%) damage on a successful block\",\"color\":\"yellow\",\"italic\":false}",
+        "{\"text\":\"'*' indicates the value for non-slayers\",\"color\":\"yellow\"}"
+      ]
+    }
+  }
+}

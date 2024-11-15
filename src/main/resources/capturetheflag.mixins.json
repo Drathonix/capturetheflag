@@ -1,0 +1,33 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.drathonix.capturetheflag.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MixinAbstractArrow",
+    "MixinAbstractFurnaceBlockEntity",
+    "MixinArmorStand",
+    "MixinBowItem",
+    "MixinBucketItem",
+    "MixinCrafterBlock",
+    "MixinCraftingMenu",
+    "MixinEnchantingTableBlock",
+    "MixinEntity",
+    "MixinInventory",
+    "MixinItemUtils",
+    "MixinLivingEntity",
+    "MixinMinecraftServer",
+    "MixinPlayer",
+    "MixinProjectile",
+    "MixinProjectileWeaponItem",
+    "MixinServerPlayer",
+    "MixinThrownTrident",
+    "persistinjections.MixinBlockPos",
+    "persistinjections.MixinVec3i"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
