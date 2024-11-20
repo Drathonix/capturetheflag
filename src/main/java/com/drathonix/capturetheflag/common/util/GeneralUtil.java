@@ -3,8 +3,13 @@ package com.drathonix.capturetheflag.common.util;
 import com.drathonix.capturetheflag.common.CTF;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class GeneralUtil {
     public static String convertSeconds(long tseconds) {
@@ -32,12 +37,23 @@ public class GeneralUtil {
     }
 
     public static void sendToAllPlayers(Component message){
-        if(message == null){
-            new NullPointerException("located").printStackTrace();
-        }
-        System.out.println("Sending message: " + message);
         for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
             player.sendSystemMessage(message);
         }
+    }
+
+    public static void sendToAllPlayers(SoundEvent sound) {
+        for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
+            player.playNotifySound(sound, SoundSource.MASTER,1f,1f);
+        }
+    }
+
+    public static <T> List<T> shuffle(List<T> list){
+        List<T> out = new ArrayList<T>();
+        List<T> copy = new ArrayList<>(list);
+        while(!copy.isEmpty()){
+            out.add(copy.remove((int)(Math.random()*copy.size())));
+        }
+        return out;
     }
 }

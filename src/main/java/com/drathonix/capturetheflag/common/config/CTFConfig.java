@@ -42,6 +42,9 @@ public class CTFConfig {
     @Save(description = "Number of flags to win.")
     public static int winCondition = 3;
 
+    @Save(description = "Time in seconds during which a player is immune in the flag room.")
+    public static long safetyDuration=15;
+
     public static void init() {
         {
             protectedRecipes.add(ResourceLocation.fromNamespaceAndPath("minecraft","blast_furnace"));
@@ -56,33 +59,32 @@ public class CTFConfig {
             protectedRecipes.add(ResourceLocation.fromNamespaceAndPath(CTF.modid,"trident"));
         }
         {
-            enchantmentToLevelBase(location(Enchantments.PROTECTION), 4);
-            enchantmentToLevelBase(location(Enchantments.UNBREAKING), 2);
-            enchantmentToLevelBase(location(Enchantments.PROJECTILE_PROTECTION), 3);
-            enchantmentToLevelBase(location(Enchantments.SWIFT_SNEAK), 3);
-            enchantmentToLevelBase(location(Enchantments.RESPIRATION), 3);
-            enchantmentToLevelBase(location(Enchantments.FEATHER_FALLING), 4);
-            enchantmentToLevelBase(location(Enchantments.DEPTH_STRIDER), 4);
-            enchantmentToLevelBase(location(Enchantments.EFFICIENCY), 4);
-            enchantmentToLevelBase(location(Enchantments.FORTUNE), 8);
-            enchantmentToLevelBase(location(Enchantments.SHARPNESS), 6);
-            enchantmentToLevelBase(location(Enchantments.SWEEPING_EDGE), 5);
-            enchantmentToLevelBase(location(Enchantments.FIRE_ASPECT), 8);
-            enchantmentToLevelBase(location(Enchantments.FLAME), 16);
-            enchantmentToLevelBase(location(Enchantments.POWER), 6);
-            enchantmentToLevelBase(location(Enchantments.INFINITY), 12);
-            enchantmentToLevelBase(location(Enchantments.PIERCING), 6);
+            enchantmentToLevelBase(location(Enchantments.PROTECTION), 2);
+            enchantmentToLevelBase(location(Enchantments.UNBREAKING), 1);
+            enchantmentToLevelBase(location(Enchantments.PROJECTILE_PROTECTION), 2);
+            enchantmentToLevelBase(location(Enchantments.SWIFT_SNEAK), 1);
+            enchantmentToLevelBase(location(Enchantments.RESPIRATION), 1);
+            enchantmentToLevelBase(location(Enchantments.FEATHER_FALLING), 2);
+            enchantmentToLevelBase(location(Enchantments.DEPTH_STRIDER), 2);
+            enchantmentToLevelBase(location(Enchantments.EFFICIENCY), 2);
+            enchantmentToLevelBase(location(Enchantments.FORTUNE), 4);
+            enchantmentToLevelBase(location(Enchantments.SHARPNESS), 3);
+            enchantmentToLevelBase(location(Enchantments.SWEEPING_EDGE), 2);
+            enchantmentToLevelBase(location(Enchantments.FIRE_ASPECT), 7);
+            enchantmentToLevelBase(location(Enchantments.FLAME), 14);
+            enchantmentToLevelBase(location(Enchantments.POWER), 3);
+            enchantmentToLevelBase(location(Enchantments.INFINITY), 4);
+            enchantmentToLevelBase(location(Enchantments.PIERCING), 3);
             enchantmentToLevelBase(location(Enchantments.MULTISHOT), 12);
-            enchantmentToLevelBase(location(Enchantments.QUICK_CHARGE), 8);
-            enchantmentToLevelBase(location(Enchantments.CHANNELING), 12);
-            enchantmentToLevelBase(location(Enchantments.PUNCH), 6);
-            enchantmentToLevelBase(location(Enchantments.KNOCKBACK), 6);
+            enchantmentToLevelBase(location(Enchantments.QUICK_CHARGE), 4);
+            enchantmentToLevelBase(location(Enchantments.PUNCH), 3);
+            enchantmentToLevelBase(location(Enchantments.KNOCKBACK), 2);
             //Loyalty is given in crafting, but is still enchantable.
             enchantmentToLevelBase(location(Enchantments.LOYALTY), 1);
-            enchantmentToLevelBase(location(Enchantments.THORNS), 12);
-            enchantmentToLevelBase(location(Enchantments.WIND_BURST), 12);
-            enchantmentToLevelBase(location(Enchantments.DENSITY), 12);
-            enchantmentToLevelBase(location(Enchantments.BREACH), 6);
+            enchantmentToLevelBase(location(Enchantments.THORNS), 3);
+            enchantmentToLevelBase(location(Enchantments.WIND_BURST), 3);
+            enchantmentToLevelBase(location(Enchantments.DENSITY), 3);
+            enchantmentToLevelBase(location(Enchantments.BREACH), 3);
         }
         {
             enchantmentToItem(location(Enchantments.PROTECTION), Items.IRON_CHESTPLATE);

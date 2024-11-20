@@ -13,10 +13,9 @@ import com.vicious.persist.shortcuts.PersistShortcuts;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -24,41 +23,43 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.scores.Team;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class GameDataCache {
 
     static {
         Stringify.register(AABB.class,str->{
-            String[] values = str.split(",");
+            String[] values = str.split("/");
             return new AABB(Double.parseDouble(values[0]),
                     Double.parseDouble(values[1]),
                     Double.parseDouble(values[2]),
                     Double.parseDouble(values[3]),
                     Double.parseDouble(values[4]),
                     Double.parseDouble(values[5]));
-        },aabb-> aabb.minX + "," + aabb.minY + "," + aabb.minZ + ","
-                + aabb.maxX + "," + aabb.maxY + "," +aabb.maxZ);
+        },aabb-> aabb.minX + "/" + aabb.minY + "/" + aabb.minZ + "/"
+                + aabb.maxX + "/" + aabb.maxY + "/" +aabb.maxZ);
         Stringify.register(BoundingBox.class,str->{
-            String[] values = str.split(",");
+            String[] values = str.split("/");
             return new BoundingBox(Integer.parseInt(values[0]),
                     Integer.parseInt(values[1]),
                     Integer.parseInt(values[2]),
                     Integer.parseInt(values[3]),
                     Integer.parseInt(values[4]),
                     Integer.parseInt(values[5]));
-        },aabb-> aabb.minX() + "," + aabb.minY() + "," + aabb.minZ() + ","
-                + aabb.maxX() + "," + aabb.maxY() + "," +aabb.maxZ());
+        },aabb-> aabb.minX() + "/" + aabb.minY() + "/" + aabb.minZ() + "/"
+                + aabb.maxX() + "/" + aabb.maxY() + "/" +aabb.maxZ());
     }
 
     @Save
-    @Typing(BoundingBox.class)
-    public static List<BoundingBox> permanentStructureAABBs = new ArrayList<>();
+    @Typing(ProtectedRegion.class)
+    public static List<ProtectedRegion> protectedRegions = new ArrayList<>();
 
     @Save
     public static int gamePhaseIndex = 0;
@@ -68,6 +69,14 @@ public class GameDataCache {
 
     @Save
     public static BlockPos center = new BlockPos(0,0,0);
+
+    @Save
+    @Typing(TeamState.class)
+    public static List<TeamState> teams = new ArrayList<>();
+
+    static {
+        teams.addAll(List.of(TeamState.values()));
+    }
 
     public static GamePhase getGamePhase(){
         if(gamePhaseIndex < 0 || gamePhaseIndex >= GamePhaseConfig.phases.size()){
@@ -87,8 +96,54 @@ public class GameDataCache {
         PersistShortcuts.saveAsFile(GameDataCache.class);
     }
 
+    public static void protect(BoundingBox aabb, ProtectedRegion.Type type){
+        protectedRegions.add(new ProtectedRegion(type,aabb));
+    }
+
+    public static void protect(BoundingBox aabb, ProtectedRegion.Type type, @Nullable TeamState team){
+        protectedRegions.add(new ProtectedRegion(type,aabb,team));
+    }
+
+    public static void viewProtectedRegionsAt(BlockPos pos, Consumer<ProtectedRegion> consumer){
+        for (ProtectedRegion protectedRegion : protectedRegions) {
+            if(protectedRegion.aabb.isInside(pos)){
+                consumer.accept(protectedRegion);
+            }
+        }
+    }
+
+    public static <T> @Nullable T viewProtectedRegionsAt(BlockPos pos, Function<ProtectedRegion,T> fun){
+        for (ProtectedRegion protectedRegion : protectedRegions) {
+            if(protectedRegion.aabb.isInside(pos)){
+                T t = fun.apply(protectedRegion);
+                if(t != null){
+                    return t;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static <T> @NotNull T viewProtectedRegionsAt(BlockPos pos, Function<ProtectedRegion,T> fun, Supplier<T> defaulter){
+        for (ProtectedRegion protectedRegion : protectedRegions) {
+            if(protectedRegion.aabb.isInside(pos)){
+                T t = fun.apply(protectedRegion);
+                if(t != null){
+                    return t;
+                }
+            }
+        }
+        return defaulter.get();
+    }
+
     public static void clearAndSave(){
-        permanentStructureAABBs.clear();
+        protectedRegions.clear();
+        for (TeamState team : teams) {
+            team.reset();
+        }
+        gamePhaseIndex=0;
+        periodSeconds=0;
+        center=new BlockPos(0,0,0);
         PersistShortcuts.saveAsFile(GameDataCache.class);
     }
 
@@ -109,6 +164,7 @@ public class GameDataCache {
             phase.onTick(periodSeconds);
         }
         periodSeconds++;
+        CTFScoreboard.tick(server);
     }
 
     private static long k = 0;
@@ -166,7 +222,6 @@ public class GameDataCache {
     }
 
     public static void finish() {
-        getGamePhase().onStart();
         Component winner;
         if(TeamState.RED.flagsCaptured > TeamState.BLUE.flagsCaptured){
             winner = Component.literal("RED HAS WON THE GAME").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.RED);
@@ -177,9 +232,15 @@ public class GameDataCache {
         else{
             winner = Component.literal("TIE.").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD);
         }
+        Packet<?> pkt = new ClientboundSetTitleTextPacket(winner);
+        GeneralUtil.sendToAllPlayers(winner);
         for (ServerPlayer serverPlayer : CTF.server.getPlayerList().getPlayers()) {
-            serverPlayer.connection.send(new ClientboundSetTitleTextPacket(winner));
+            serverPlayer.connection.send(pkt);
             serverPlayer.playNotifySound(SoundEvents.WITHER_DEATH, SoundSource.MASTER,1f,1f);
         }
+    }
+
+    public static long timeRemaining() {
+        return getGamePhase().periodSeconds-periodSeconds;
     }
 }

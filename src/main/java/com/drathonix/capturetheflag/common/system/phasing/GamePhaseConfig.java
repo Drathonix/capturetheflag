@@ -30,7 +30,7 @@ public class GamePhaseConfig {
         phases.add(GamePhase.of("starting")
                 .period(30)
                 .displayName("Starting")
-                .flags(PhaseFlag.INFINITE_CLASS_SWAP,PhaseFlag.INITIALIZER,PhaseFlag.INVULN));
+                .flags(PhaseFlag.INFINITE_CLASS_SWAP,PhaseFlag.INITIALIZER,PhaseFlag.INVULN, PhaseFlag.FREEZE));
         phases.add(GamePhase.of("preparation1")
                 .period(30*60)
                 .displayName("Preparation")

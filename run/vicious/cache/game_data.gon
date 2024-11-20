@@ -1,8 +1,0 @@
-center = {
-	x = 0
-	y = 0
-	z = 0
-}
-gamePhaseIndex = 0
-periodSeconds = 0
-permanentStructureAABBs = []

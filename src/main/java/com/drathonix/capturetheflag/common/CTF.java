@@ -31,6 +31,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class CTF {
     public static String modid = "capturetheflag";
@@ -52,11 +54,16 @@ public class CTF {
         Stringify.register(ResourceLocation.class, CTF::safeRL,CTF::safeRL);
         Stringify.register(Component.class,CTF::parseComponent, CTF::componentJsonify);
         Stringify.register(MutableComponent.class,CTF::parseComponent, CTF::componentJsonify);
+        Stringify.register(BlockPos.class,str->{
+            String[] sep = str.split("/");
+            return new BlockPos(Integer.parseInt(sep[0]),Integer.parseInt(sep[1]),Integer.parseInt(sep[2]));
+        },pos-> pos.getX() + "/" + pos.getY() + "/" + pos.getZ());
         Configs.reload();
         CTFEventHandler.init();
         CommandRegistrationEvent.EVENT.register((dispatcher,registry,selection)->{
             CTFCommands.init(dispatcher);
         });
+        executor.scheduleAtFixedRate(GameDataCache::save,60,60, TimeUnit.SECONDS);
         /*TickEvent.ServerLevelTick.SERVER_POST.register(server->{
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 CTFPlayerData data = CTFPlayerData.get(player);

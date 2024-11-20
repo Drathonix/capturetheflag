@@ -43,10 +43,20 @@ public enum TeamState {
     private int lapisCount = 0;
 
     @Nullable
-    public ArmorStand stand;
+    @Save
+    public BlockPos spawn;
 
-    TeamState(Quadrant quadrant) {
+    TeamState(@NotNull Quadrant quadrant) {
         this.quadrant = quadrant;
+    }
+
+    public static @Nullable TeamState byQuadrant(Quadrant quadrant) {
+        for (TeamState value : TeamState.values()) {
+            if(value.quadrant == quadrant){
+                return value;
+            }
+        }
+        return null;
     }
 
     public int getLapis() {
@@ -93,9 +103,7 @@ public enum TeamState {
         }
         if(System.currentTimeMillis() >= cooldownEnd){
             GeneralUtil.sendToAllPlayers(Component.literal(player.getGameProfile().getName() + " has stolen the " + this.name().toLowerCase()+ " flag! Get them!").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD));
-            for (ServerPlayer serverPlayer : CTF.server.getPlayerList().getPlayers()) {
-                serverPlayer.playNotifySound(SoundEvents.ENDER_DRAGON_GROWL, SoundSource.MASTER,1f,1f);
-            }
+            GeneralUtil.sendToAllPlayers(SoundEvents.ENDER_DRAGON_GROWL);
             CTFPlayerData.get(player).setHasFlag(true);
             cooldownEnd=-1;
         }
@@ -105,9 +113,7 @@ public enum TeamState {
         CTFPlayerData data = CTFPlayerData.get(player);
         if(data.hasFlag()){
             GeneralUtil.sendToAllPlayers(Component.literal(player.getGameProfile().getName() + " has captured the " + this.getOpposite().name().toLowerCase()+ " flag! Their flag cannot be stolen again for " + GeneralUtil.convertSeconds(CTFConfig.stealFlagCooldownTime) + "!").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD));
-            for (ServerPlayer serverPlayer : CTF.server.getPlayerList().getPlayers()) {
-                serverPlayer.playNotifySound(SoundEvents.ENDER_DRAGON_GROWL, SoundSource.MASTER,1f,1f);
-            }
+            GeneralUtil.sendToAllPlayers(SoundEvents.ENDER_DRAGON_GROWL);
             flagsCaptured++;
             this.getOpposite().cooldownEnd = System.currentTimeMillis()+CTFConfig.stealFlagCooldownTime*1000;
             if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.TIME_LOSS)){
@@ -118,6 +124,7 @@ public enum TeamState {
             if(flagsCaptured >= CTFConfig.winCondition){
                 GameDataCache.forceFinish();
             }
+            CTFScoreboard.updateSB();
         }
     }
 
@@ -137,13 +144,8 @@ public enum TeamState {
     }
 
     public @Nullable BlockPos getSpawn(){
-        if(stand != null){
-            Entity target = this.stand;
-            BlockPos pos = target.blockPosition();
-            while(!target.level().getBlockState(pos).isAir() && pos.getY() < target.level().getMaxY()){
-                pos = pos.above();
-            }
-            return pos;
+        if(spawn != null){
+            return spawn;
         }
         return null;
     }
@@ -157,5 +159,15 @@ public enum TeamState {
             return quadrant.getBoundingBox().contains(new Vec3(ctf$previous));
         }
         return false;
+    }
+
+    public void reset() {
+        flagsCaptured=0;
+        cooldownEnd=0;
+        lapisCount=0;
+    }
+
+    public static @Nullable TeamState get(ServerPlayer player){
+        return CTFPlayerData.get(player).getTeamState();
     }
 }

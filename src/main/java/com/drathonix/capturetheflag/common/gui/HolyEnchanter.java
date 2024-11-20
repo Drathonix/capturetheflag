@@ -6,6 +6,7 @@ import com.drathonix.capturetheflag.common.config.CTFConfig;
 import com.drathonix.capturetheflag.common.gui.base.ChestGUIMenu;
 import com.drathonix.capturetheflag.common.gui.base.GUISlot;
 import com.drathonix.capturetheflag.common.gui.base.TickingGUISlot;
+import com.drathonix.capturetheflag.common.system.CustomItem;
 import com.drathonix.capturetheflag.common.util.regis.EnchantmentRetriever;
 import com.drathonix.capturetheflag.common.util.regis.ItemRetriever;
 import com.mojang.datafixers.util.Pair;
@@ -264,6 +265,10 @@ public class HolyEnchanter extends ChestGUIMenu {
         while(k < 9 && iterator.hasNext()){
             Holder<Enchantment> holder = iterator.next();
             int mp = data.getClassType().enchantments.getOrDefault(new EnchantmentRetriever(holder),0);
+            CustomItem custom = CustomDatas.getCustomItem(slotStack);
+            if(custom != CustomItem.NONE){
+                mp = custom.maxifyEnchant(holder,mp);
+            }
             if (holder.value().isSupportedItem(slotStack) && mp > 0) {
                 int pwr = slotStack.getEnchantments().getLevel(holder);
                 power[k] = Pair.of(pwr, holder);
@@ -308,15 +313,21 @@ public class HolyEnchanter extends ChestGUIMenu {
     }
 
     private boolean noConflicts() {
-        l1: for (Pair<Integer, Holder<Enchantment>> pair : power) {
+        for (Pair<Integer, Holder<Enchantment>> pair : power) {
+            if(pair == null){
+                break;
+            }
+            if(pair.getFirst() <= 0){
+                continue;
+            }
             for (Pair<Integer, Holder<Enchantment>> pair2 : power) {
-                if(pair == null){
-                    break l1;
-                }
                 if(pair2 == null){
                     break;
                 }
-                if(Enchantment.areCompatible(pair.getSecond(),pair2.getSecond())){
+                if(pair.getSecond().equals(pair2.getSecond()) || pair2.getFirst() <= 0){
+                    continue;
+                }
+                if(!Enchantment.areCompatible(pair.getSecond(),pair2.getSecond())){
                     return false;
                 }
             }
@@ -329,7 +340,12 @@ public class HolyEnchanter extends ChestGUIMenu {
             Holder<Enchantment> holder = power[i].getSecond();
             if (holder != null) {
                 int maxPower = data.getClassType().enchantments.get(new EnchantmentRetriever(holder));
-                power[i] = power[i].mapFirst(k -> Math.max(selectedSlot.getItem().getEnchantments().getLevel(holder), (k + 1) % (maxPower+1)));
+                CustomItem custom = CustomDatas.getCustomItem(selectedSlot.getItem());
+                if(custom != CustomItem.NONE){
+                    maxPower = custom.maxifyEnchant(holder,maxPower);
+                }
+                int finalMaxPower = maxPower;
+                power[i] = power[i].mapFirst(k -> Math.max(selectedSlot.getItem().getEnchantments().getLevel(holder), (k + 1) % (finalMaxPower +1)));
                 ItemStack stack = enchantSlots[i].getItem();
                 stack.setCount(Math.max(1, power[i].getFirst()));
                 stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, power[i].getFirst() > 0);

@@ -1,5 +1,6 @@
 package com.drathonix.capturetheflag.mixin;
 
+import com.drathonix.capturetheflag.common.CTF;
 import com.drathonix.capturetheflag.common.ClassType;
 import com.drathonix.capturetheflag.common.bridge.IMixinServerPlayer;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
@@ -84,6 +85,12 @@ public abstract class MixinServerPlayer extends MixinPlayer implements IMixinSer
     private int ctf$counter = 1;
     @Inject(method = "tick",at = @At("RETURN"))
     public synchronized void playerTick(CallbackInfo ci){
+        if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.WAITING_BOX)){
+            if(GameGenerator.waitingBox.aabb != null && !GameGenerator.waitingBox.aabb.intersects(getBoundingBox())){
+                Vec3 dest = new Vec3(GameDataCache.center.atY(0).above(GameGenerator.waitingBox.y+1));
+                teleportTo(dest.x,dest.y,dest.z);
+            }
+        }
         if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.IN_PLAY)) {
             ServerPlayer sp = (ServerPlayer) (Object) this;
             ctf$pdata.requireClassType(type -> {
@@ -97,19 +104,20 @@ public abstract class MixinServerPlayer extends MixinPlayer implements IMixinSer
                         if (team.isWithinTerritory(sp)) {
                             type.territorialEffects.forEach((effect, power) -> {
                                 if (power > 0) {
-                                    sp.addEffect(new MobEffectInstance(effect.get(), 120, power - 1));
+                                    sp.addEffect(new MobEffectInstance(effect.get(), 120, power - 1,false,false));
                                 }
                             });
                         } else {
                             type.passiveEffects.forEach((effect, power) -> {
                                 if (power > 0) {
-                                    sp.addEffect(new MobEffectInstance(effect.get(), 120, power - 1));
+                                    sp.addEffect(new MobEffectInstance(effect.get(), 120, power - 1,false,false));
                                 }
                             });
                         }
                         if (ctf$pdata.hasFlag()) {
                             sp.addEffect(new MobEffectInstance(MobEffects.GLOWING, 120, 0));
                         }
+                        sp.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, Integer.MAX_VALUE, 0));
                     }
                 });
                 AttributeMap map = sp.getAttributes();

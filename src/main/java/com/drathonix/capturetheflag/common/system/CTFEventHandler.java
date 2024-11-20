@@ -8,17 +8,14 @@ import com.drathonix.capturetheflag.common.config.CTFConfig;
 import com.drathonix.capturetheflag.common.config.ItemsConfig;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
 import com.drathonix.capturetheflag.common.system.phasing.PhaseFlag;
-import com.drathonix.capturetheflag.common.system.stands.ArmorStandMarkers;
 import com.drathonix.capturetheflag.common.util.DirectionUtil;
 import com.drathonix.capturetheflag.common.util.GeneralUtil;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.*;
 import dev.architectury.utils.value.IntValue;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
@@ -38,17 +35,14 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Map;
 
 public class CTFEventHandler {
 
@@ -58,11 +52,21 @@ public class CTFEventHandler {
         PlayerEvent.PLAYER_CLONE.register(CTFEventHandler::onPlayerClone);
         PlayerEvent.DROP_ITEM.register(CTFEventHandler::onPlayerDrop);
         PlayerEvent.PICKUP_ITEM_PRE.register(CTFEventHandler::onPlayerPickup);
+        PlayerEvent.PLAYER_JOIN.register(CTFEventHandler::onJoin);
         BlockEvent.PLACE.register(CTFEventHandler::onBlockPlace);
         BlockEvent.BREAK.register(CTFEventHandler::onBlockBreak);
         InteractionEvent.RIGHT_CLICK_BLOCK.register(CTFEventHandler::onClickBlock);
         InteractionEvent.LEFT_CLICK_BLOCK.register(CTFEventHandler::onHitBlock);
         TickEvent.SERVER_POST.register(GameDataCache::tick);
+    }
+
+    private static void onJoin(ServerPlayer player) {
+        if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.IN_PLAY)){
+            CTFPlayerData data = CTFPlayerData.get(player);
+            if(data.getTeamState() == null){
+                player.setGameMode(GameType.SPECTATOR);
+            }
+        }
     }
 
     private static EventResult onPlayerPickup(Player player, ItemEntity itemEntity, ItemStack stack) {
@@ -108,6 +112,9 @@ public class CTFEventHandler {
             return EventResult.interruptFalse();
         }
         if(source.getEntity() instanceof ServerPlayer sp){
+            if(GameDataCache.viewProtectedRegionsAt(sp.blockPosition(),region->region.type.allowAttackOther(sp.serverLevel(),sp.blockPosition(),region,sp,livingEntity) ? null : true,()->false)){
+                return EventResult.interruptFalse();
+            }
             CTFPlayerData data = CTFPlayerData.get(sp);
             if(data.getTeamState() != null) {
                 if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.RESTRICTED) && data.getTeamState().getOpposite().isWithinTerritory(livingEntity)) {
@@ -118,58 +125,23 @@ public class CTFEventHandler {
         return EventResult.pass();
     }
 
-
-    public synchronized static boolean shouldCancelBlockEvent(ServerLevel level, BlockPos pos) {
-        boolean[] cancel = new boolean[]{false};
-        ArmorStandMarkers.forEachStand(ArmorStandMarkers.clearBeacon, stand -> {
-            if (pos.getY() >= stand.getBlockY()) {
-                if (stand.blockPosition().equals(new BlockPos(pos.getX(), (int) stand.getY(), pos.getZ()))) {
-                    cancel[0] = true;
-                    return true;
-                }
-            }
-            return false;
-        });
-        if (cancel[0]) {
-            return true;
-        }
-        for (BoundingBox permanentStructureAABB : GameDataCache.permanentStructureAABBs) {
-            if (permanentStructureAABB.isInside(pos)) {
-                return true;
-            }
-        }
-        /*
-        Map<Structure, LongSet> structures = level.structureManager().getAllStructuresAt(pos);
-        for (Map.Entry<Structure, LongSet> entry : structures.entrySet()) {
-            if(GameGenerator.protectedStructures.contains(level.registryAccess().lookup(Registries.STRUCTURE).get().getKey(entry.getKey()))){
-                System.out.println("Cancel b/c protected");
-                return true;
-            }
-        }*/
-        return false;
-    }
-
     private synchronized static InteractionResult onClickBlock(Player player, InteractionHand interactionHand, BlockPos pos, Direction direction) {
         if(player instanceof ServerPlayer sp) {
-            if (shouldCancelBlockEvent(sp.serverLevel(),pos)){
-                return InteractionResult.FAIL;
-            }
+            return GameDataCache.viewProtectedRegionsAt(pos, region -> region.type.allowBlockInteract(sp.serverLevel(),pos,region,sp) ? null : InteractionResult.FAIL, () -> InteractionResult.PASS);
         }
         return InteractionResult.PASS;
     }
 
     private static InteractionResult onHitBlock(Player player, InteractionHand interactionHand, BlockPos pos, Direction direction) {
         if(player instanceof ServerPlayer sp) {
-            if (shouldCancelBlockEvent(sp.serverLevel(),pos)){
-                return InteractionResult.FAIL;
-            }
+            return GameDataCache.viewProtectedRegionsAt(pos, region -> region.type.allowBlockInteract(sp.serverLevel(),pos,region,sp) ? null : InteractionResult.FAIL, () -> InteractionResult.PASS);
         }
         return InteractionResult.PASS;
     }
 
     private synchronized static EventResult onBlockBreak(Level level, BlockPos pos, BlockState state, ServerPlayer sp, IntValue xp) {
         if (sp != null && level instanceof ServerLevel sl) {
-            if (shouldCancelBlockEvent(sl, pos)) {
+            if(GameDataCache.viewProtectedRegionsAt(pos, region -> region.type.allowBlockBreak(sl,pos,region,sp) ? null : true,()->false)){
                 return EventResult.interruptFalse();
             }
             ItemStack stack = sp.getItemInHand(InteractionHand.MAIN_HAND);
@@ -178,7 +150,7 @@ public class CTFEventHandler {
                     //Prevent recursive actions.
                     CustomDatas.setCustomItemType(stack, CustomItem.NONE);
                     for (BlockPos blockPos : DirectionUtil.adjacents(Direction.orderedByNearest(sp)[0]).translated(pos)) {
-                        if (!shouldCancelBlockEvent(sl, blockPos)
+                        if (GameDataCache.viewProtectedRegionsAt(pos,region->region.type.allowBlockBreak(sl,blockPos,region,sp) ? null : false,()->true)
                                 && !level.getBlockState(blockPos).getTags().filter(tag -> tag == BlockTags.MINEABLE_WITH_PICKAXE).toList().isEmpty()) {
                             sp.gameMode.destroyBlock(blockPos);
                         }
@@ -193,7 +165,7 @@ public class CTFEventHandler {
 
     private synchronized static EventResult onBlockPlace(Level level, BlockPos pos, BlockState state, Entity placer) {
         if (placer instanceof ServerPlayer sp) {
-            if (shouldCancelBlockEvent(sp.serverLevel(), pos)) {
+            if(GameDataCache.viewProtectedRegionsAt(pos, region -> region.type.allowBlockPlace(sp.serverLevel(),pos,region,sp) ? null : true,()->false)){
                 return EventResult.interruptFalse();
             }
             if (state.getBlock() instanceof AbstractFurnaceBlock) {
@@ -211,10 +183,12 @@ public class CTFEventHandler {
                 CTFPlayerData.get(sp).requireClassType(type -> {
                     int k = type == ClassType.BUILDER ? ItemsConfig.brickLayerPlacementBuilder : ItemsConfig.brickLayerPlacement;
                     BlockPos ps = pk;
-                    while (level.getEntitiesOfClass(LivingEntity.class,new AABB(ps)).isEmpty() && !mainHand.isEmpty() && k > 0 && level.isInWorldBounds(ps)) {
+                    while (level.getEntitiesOfClass(LivingEntity.class,new AABB(ps).inflate(0.25D)).isEmpty() && !mainHand.isEmpty() && k > 0 && level.isInWorldBounds(ps) && !isPast(placer.blockPosition(),pk,dir)) {
                         try {
-                            if (!shouldCancelBlockEvent(sp.serverLevel(), ps)) {
+                            BlockPos finalPs = ps;
+                            if (GameDataCache.viewProtectedRegionsAt(pos, region->region.type.allowBlockPlace(sp.serverLevel(), finalPs,region,sp) ? null : false,()->true) && level.getBlockState(ps).canBeReplaced()) {
                                 level.setBlockAndUpdate(ps, block.getStateForPlacement(new BlockPlaceContext(sp, InteractionHand.MAIN_HAND, mainHand, BlockHitResult.miss(new Vec3(ps), dir.getOpposite(), ps))));
+
                             }
                         } catch (Throwable t) {
                             t.printStackTrace();
@@ -230,6 +204,33 @@ public class CTFEventHandler {
             }
         }
         return EventResult.pass();
+    }
+
+    private static boolean isPast(BlockPos placer, BlockPos cur, Direction dir) {
+        if(dir.getStepX() != 0){
+            if(dir.getStepX() < 0){
+                return cur.getX() < placer.getX();
+            }
+            else {
+                return cur.getX() > placer.getX();
+            }
+        }
+        else if(dir.getStepY() != 0){
+            if(dir.getStepY() < 0){
+                return cur.getY() < placer.getY();
+            }
+            else {
+                return cur.getY() > placer.getY();
+            }
+        }
+        else{
+            if(dir.getStepZ() < 0){
+                return cur.getZ() < placer.getZ();
+            }
+            else {
+                return cur.getZ() > placer.getZ();
+            }
+        }
     }
 
     private synchronized static void onPlayerClone(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean wonGame) {
@@ -255,7 +256,8 @@ public class CTFEventHandler {
                             .withStyle(ChatFormatting.GREEN)
                             .withStyle(ChatFormatting.BOLD)
                             .append(sp.getDisplayName())
-                            .append(Component.literal(" has dropped the " + teamState.getOpposite().name().toLowerCase() + " it has been returned and placed on a " + GeneralUtil.convertSeconds(CTFConfig.stealFlagCooldownTime) + " second re-steal cooldown!")));
+                            .append(Component.literal(" has dropped the " + teamState.getOpposite().name().toLowerCase() + " flag it has been returned and placed on a " + GeneralUtil.convertSeconds(CTFConfig.stealFlagCooldownTime) + " second re-steal cooldown!")));
+                    GeneralUtil.sendToAllPlayers(SoundEvents.ENDERMAN_DEATH);
                     teamState.getOpposite().cooldownEnd = System.currentTimeMillis()+CTFConfig.stealFlagCooldownTime*1000;
                     data.setHasFlag(false);
                 }

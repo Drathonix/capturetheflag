@@ -3,10 +3,8 @@ package com.drathonix.capturetheflag.common.system;
 import com.drathonix.capturetheflag.common.CTF;
 import com.drathonix.capturetheflag.common.ClassType;
 import com.drathonix.capturetheflag.common.gui.ClassSelection;
-import com.drathonix.capturetheflag.common.gui.HolyEnchanter;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
 import com.drathonix.capturetheflag.common.system.phasing.PhaseFlag;
-import com.drathonix.capturetheflag.common.system.stands.ArmorStandMarkers;
 import com.drathonix.capturetheflag.common.util.GeneralUtil;
 import com.drathonix.finallib.common.inventory.wrapper.InventoryWrapper;
 import com.mojang.brigadier.CommandDispatcher;
@@ -17,18 +15,17 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
+import java.util.List;
 
 
 public class CTFCommands {
@@ -52,12 +49,13 @@ public class CTFCommands {
             if(ctx.getSource().getEntity() instanceof ServerPlayer sp){
                 CTFPlayerData data = CTFPlayerData.get(sp);
                 data.requireTeam(team->{
-                    if(System.currentTimeMillis() >= data.homeCooldown){
+                    if(System.currentTimeMillis() >= data.homeCooldownEnd){
                         Vec3 vec = team.getSpawn().getCenter();
                         sp.teleportTo(vec.x,vec.y,vec.z);
+                        data.homeCooldownEnd =System.currentTimeMillis()+5*60*1000;
                     }
                     else{
-                        sp.sendSystemMessage(Component.literal("/flag is on cooldown for " + GeneralUtil.convertSeconds(data.homeCooldown) + ", cannot teleport.").withStyle(ChatFormatting.RED));
+                        sp.sendSystemMessage(Component.literal("/flag is on cooldown for " + GeneralUtil.convertSeconds(data.homeCooldownEnd) + ", cannot teleport.").withStyle(ChatFormatting.RED));
                     }
                 });
             }
@@ -79,7 +77,7 @@ public class CTFCommands {
                                         CTFPlayerData data = CTFPlayerData.get(player);
                                         data.setTeamState(state);
                                         if(data.getClassType() == null) {
-                                            CTFPlayerData.get(player).setClassType(ClassType.MINER);
+                                            data.setClassType(ClassType.MINER);
                                         }
                                     });
                                     return 1;
@@ -100,5 +98,78 @@ public class CTFCommands {
             GeneralUtil.sendToAllPlayers(Component.literal("Increased stage time to " + GameDataCache.periodSeconds + " seconds."));
             return 1;
         })));
+        dispatcher.register(Commands.literal("loadcached").requires(ctx->ctx.hasPermission(Commands.LEVEL_MODERATORS)).executes(ctx->{
+            try {
+                GameDataCache.init();
+            } catch (Throwable t){
+                t.printStackTrace();
+            }
+            return 1;
+        }));
+        dispatcher.register(Commands.literal("savecache").requires(ctx->ctx.hasPermission(Commands.LEVEL_MODERATORS)).executes(ctx->{
+            try {
+                GameDataCache.save();
+            } catch (Throwable t){
+                t.printStackTrace();
+            }
+            return 1;
+        }));
+        dispatcher.register(Commands.literal("wiki").executes(ctx->{
+            String url = "https://github.com/Drathonix/capturetheflag/wiki/gameplay";
+            if(ctx.getSource().getEntity() instanceof ServerPlayer sp){
+                ClassType type = CTFPlayerData.get(sp).getClassType();
+                if(type != null){
+                    url = type.wikiURL();
+                }
+            }
+            ctx.getSource().sendSystemMessage(Component.literal(url).setStyle(Style.EMPTY.withUnderlined(true).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,url)).withColor(ChatFormatting.GREEN)));
+            return 1;
+        }));
+        dispatcher.register(Commands.literal("randomizeteams").requires(ctx->ctx.hasPermission(Commands.LEVEL_MODERATORS)).executes(ctx->{
+            List<ServerPlayer> shuffled = GeneralUtil.shuffle(CTF.server.getPlayerList().getPlayers());
+            int cutoff = shuffled.size()/2;
+            for (int i = 0; i < shuffled.size(); i++) {
+                TeamState state;
+                if(i <= cutoff){
+                    state=TeamState.BLUE;
+                }
+                else{
+                    state=TeamState.RED;
+                }
+                CTFPlayerData data = CTFPlayerData.get(shuffled.get(i));
+                data.setTeamState(state);
+                shuffled.get(i).sendSystemMessage(Component.literal("You have been assigned to team " + state.name() + " use '/class' to select your class."));
+                if(data.getClassType() == null) {
+                    data.setClassType(ClassType.MINER);
+                }
+            }
+            return 1;
+        }));
+        dispatcher.register(Commands.literal("showteams").executes(ctx->{
+            StringBuilder blueTeam = new StringBuilder();
+            StringBuilder redTeam = new StringBuilder();
+            for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
+                CTFPlayerData data = CTFPlayerData.get(player);
+                if(data.getTeamState() == TeamState.BLUE){
+                    if(!blueTeam.isEmpty()){
+                        blueTeam.append(", ");
+                    }
+                    else{
+                        blueTeam.append(player.getGameProfile().getName());
+                    }
+                }
+                else {
+                    if(!redTeam.isEmpty()){
+                        redTeam.append(", ");
+                    }
+                    else{
+                        redTeam.append(player.getGameProfile().getName());
+                    }
+                }
+            }
+            ctx.getSource().sendSystemMessage(Component.literal("Team Blue: " + blueTeam).withStyle(ChatFormatting.BLUE));
+            ctx.getSource().sendSystemMessage(Component.literal("Team Red: " + redTeam).withStyle(ChatFormatting.RED));
+            return 1;
+        }));
     }
 }

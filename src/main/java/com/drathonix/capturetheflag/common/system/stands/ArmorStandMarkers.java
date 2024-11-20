@@ -16,6 +16,9 @@ public class ArmorStandMarkers {
     public static final String clearBeacon = "clear_air";
     public static final String blueFlag = "blue_flag";
     public static final String redFlag = "red_flag";
+    public static final String blueSpawn = "blue_spawn";
+    public static final String redSpawn = "red_spawn";
+
 
     public static synchronized void add(ArmorStand armorStand, String flag) {
         flag = cleanFlag(flag);

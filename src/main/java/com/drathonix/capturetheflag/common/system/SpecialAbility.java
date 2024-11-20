@@ -46,8 +46,8 @@ public enum SpecialAbility {
         @Override
         public void onKill(ServerPlayer player) {
             player.playSound(SoundEvents.BLAZE_SHOOT);
-            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,5));
-            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,4));
+            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,10*20));
+            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,10*20));
         }
     },
     SCROUNGER{

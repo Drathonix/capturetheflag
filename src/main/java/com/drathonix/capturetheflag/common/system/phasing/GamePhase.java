@@ -12,6 +12,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.scores.Team;
 
 import java.util.HashSet;
 import java.util.List;
@@ -86,9 +91,20 @@ public class GamePhase {
 
     public void onEnd() {
         GeneralUtil.sendToAllPlayers(endMessage);
+        GeneralUtil.sendToAllPlayers(SoundEvents.ENDER_DRAGON_GROWL);
+        if(flags.contains(PhaseFlag.FREEZE)){
+            for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
+                player.removeAllEffects();
+            }
+        }
     }
 
     public void onStart() {
+        if(flags.contains(PhaseFlag.FREEZE)){
+            for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
+                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, (int) (periodSeconds*20),255));
+            }
+        }
         if(flags.contains(PhaseFlag.WAITING_BOX)){
             GeneralUtil.sendToAllPlayers(Component.literal("Waiting for players! Set spawn to waiting box!").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD));
             GameGenerator.buildWaitingBox(CTF.server.overworld(), GameDataCache.center);
@@ -103,9 +119,16 @@ public class GamePhase {
         if(flags.contains(PhaseFlag.INITIALIZER)) {
             GameDataCache.start();
             GeneralUtil.sendToAllPlayers(Component.literal("Welcome to Capture The Flag! Use /wiki for a link to your class' custom abilities and recipes. Good luck!").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD));
+            return;
         }
         if(flags.contains(PhaseFlag.RESTRICTED)) {
             GeneralUtil.sendToAllPlayers(Component.literal("You cannot enter enemy territory during this time! Prepare your defenses and equipment!").withStyle(ChatFormatting.RED));
+            for (TeamState value : TeamState.values()) {
+                value.cooldownEnd=0;
+            }
+            for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
+                CTFPlayerData.get(player).setHasFlag(false);
+            }
         }
         else{
             GeneralUtil.sendToAllPlayers(Component.literal("You can now enter enemy territory! Capture the flag!").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD));

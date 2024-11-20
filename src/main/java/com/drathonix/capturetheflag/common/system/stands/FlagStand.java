@@ -51,7 +51,7 @@ public class FlagStand implements ArmorStandModifier {
                         teamState.captureTheFlag(player);
                     }
                 }
-                teamState.stand=stand;
+
             }
         }
     }

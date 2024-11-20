@@ -19,23 +19,23 @@ public class ItemsConfig {
     public static float tridentArmorPierce = 0.075F;
 
     @Save
-    public static float longBowVelocityMultiplier = 1.5F;
+    public static float longBowVelocityMultiplier = 1.25F;
     @Save
-    public static float longBowVelocityMultiplierRanger = 2.0F;
+    public static float longBowVelocityMultiplierRanger = 1.5F;
 
     @Save
-    public static float longBowDamageMultiplier = 0.36F;
+    public static float longBowDamageMultiplier = 0.43F;
     @Save
-    public static float longBowDamageMultiplierRanger = 0.45F;
+    public static float longBowDamageMultiplierRanger = 0.55F;
 
     @Save
     public static int brickLayerPlacement = 3;
     @Save(description = "Requires restart to apply")
-    public static int brickLayerRangeBoost = 1;
+    public static int brickLayerRangeBoost = 2;
     @Save
     public static int brickLayerPlacementBuilder = 6;
     @Save(description = "Requires restart to apply")
-    public static int brickLayerRangeBoostBuilder = 3;
+    public static int brickLayerRangeBoostBuilder = 4;
 
 
     public static void init(){

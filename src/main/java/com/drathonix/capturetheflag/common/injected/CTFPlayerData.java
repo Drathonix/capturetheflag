@@ -2,6 +2,7 @@ package com.drathonix.capturetheflag.common.injected;
 
 import com.drathonix.capturetheflag.common.ClassType;
 import com.drathonix.capturetheflag.common.bridge.IMixinServerPlayer;
+import com.drathonix.capturetheflag.common.config.CTFConfig;
 import com.drathonix.capturetheflag.common.system.TeamState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,7 +15,8 @@ public class CTFPlayerData {
     private TeamState teamState;
     private ClassType classType;
     private boolean hasFlag;
-    public long homeCooldown = 0;
+    public long homeCooldownEnd = 0;
+    public long safetyCooldownEnd = -1;
     public boolean allowChangeClass = true;
 
     public @Nullable ClassType getClassType() {
@@ -78,6 +80,7 @@ public class CTFPlayerData {
 
     public void setHasFlag(boolean b) {
         this.hasFlag=b;
+        this.safetyCooldownEnd = b ? System.currentTimeMillis()+CTFConfig.safetyDuration*1000L : -1;
     }
 
     public boolean hasFlag() {

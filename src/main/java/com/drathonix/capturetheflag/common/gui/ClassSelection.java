@@ -69,7 +69,7 @@ public class ClassSelection extends ChestGUIMenu {
                 .withLineAdded(literal("+Respawns: Stone Pickaxe, Stone Axe, Iron Sword"))
                 .withLineAdded(literal("+Permanent Health Boost I in territory only"))
                 .withLineAdded(literal("+Bloodlust: Gain 5 seconds of speed I and 4 seconds of Strength I after killing a living being."))
-                .withLineAdded(literal("+10% more damage from mobs, and 30% less likely to be detected."))
+                .withLineAdded(literal("+10% more damage from mobs"))
                 .withLineAdded(literal("+Mace and Reflector Shield recipes available."))
                 .withLineAdded(literal("+Never Dies").withStyle(Style.EMPTY.withBold(true)))
         );

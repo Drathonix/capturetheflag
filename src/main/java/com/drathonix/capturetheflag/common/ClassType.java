@@ -69,7 +69,7 @@ public enum ClassType {
     WARRIOR{
         {
             abilities.add(SpecialAbility.BLOODLUST);
-            territorialEffects.put(retriever(MobEffects.HEALTH_BOOST),1);
+            passiveEffects.put(retriever(MobEffects.HEALTH_BOOST),2);
             toolTiers.put(ToolType.SWORD,ToolTier.IRON);
             enchantments.put(location(Enchantments.SHARPNESS),3);
             enchantments.put(location(Enchantments.THORNS),1);
@@ -86,7 +86,6 @@ public enum ClassType {
     RANGER {
         {
             abilities.add(SpecialAbility.SCROUNGER);
-            territorialEffects.put(retriever(MobEffects.MOVEMENT_SPEED),1);
             enchantments.put(location(Enchantments.FLAME),1);
             enchantments.put(location(Enchantments.CHANNELING), 1);
             enchantments.put(location(Enchantments.QUICK_CHARGE), 2);
@@ -148,7 +147,7 @@ public enum ClassType {
     public int arrowRespawnAmount = 0;
 
     @Save(description = "Amount of steak to respawn with")
-    public int steakRespawnAmount = 8;
+    public int steakRespawnAmount = 12;
 
     @Save(description = "Multiplies the resulting arrow dammage dealt.")
     public float arrowDamageMultiplier=1F;
@@ -191,5 +190,25 @@ public enum ClassType {
 
     private static EnchantmentRetriever location(ResourceKey<Enchantment> key){
         return new EnchantmentRetriever(key.location());
+    }
+
+    public String wikiURL() {
+        return switch (this){
+            case MINER -> {
+                yield "https://github.com/Drathonix/capturetheflag/wiki/breaker";
+            }
+            case BUILDER -> {
+                yield "https://github.com/Drathonix/capturetheflag/wiki/architect";
+            }
+            case WARRIOR -> {
+                yield "https://github.com/Drathonix/capturetheflag/wiki/slayer";
+            }
+            case RANGER -> {
+                yield "https://github.com/Drathonix/capturetheflag/wiki/ranger";
+            }
+            default -> {
+                yield "https://github.com/Drathonix/capturetheflag/wiki/gameplay";
+            }
+        };
     }
 }
