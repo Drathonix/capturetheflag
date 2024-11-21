@@ -1,6 +1,7 @@
 package com.drathonix.capturetheflag.mixin;
 
 import com.drathonix.capturetheflag.common.system.CTFEventHandler;
+import com.drathonix.capturetheflag.common.system.GameDataCache;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -16,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinPistonBaseBlock {
     @Inject(method = "isPushable",at = @At("HEAD"),cancellable = true)
     private static void preventPushingStructureBlocks(BlockState blockState, Level level, BlockPos blockPos, Direction direction, boolean bl, Direction direction2, CallbackInfoReturnable<Boolean> cir){
-        if(level instanceof ServerLevel sl && CTFEventHandler.shouldCancelBlockEvent(sl,blockPos)){
+        if(level instanceof ServerLevel && GameDataCache.viewProtectedRegionsAt(blockPos, region->region.type.allowNaturalBlockChange() ? null : true,()->false)){
             cir.setReturnValue(false);
         }
     }

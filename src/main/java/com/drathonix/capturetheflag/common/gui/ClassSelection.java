@@ -6,7 +6,7 @@ import com.drathonix.capturetheflag.common.gui.base.GUISlot;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
 import com.drathonix.capturetheflag.common.system.GameDataCache;
 import com.drathonix.capturetheflag.common.system.phasing.PhaseFlag;
-import dev.architectury.utils.GameInstance;
+import com.drathonix.finallib.common.inventory.wrapper.InventoryWrapper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -25,15 +25,19 @@ import net.minecraft.world.item.component.ItemLore;
 import java.awt.*;
 
 public class ClassSelection extends ChestGUIMenu {
+    private final InventoryWrapper inv;
     private GUISlot[] classSlots;
     private ClassType previous;
-    public ClassSelection(int id, Inventory inventory, Container container) {
-        super(MenuType.GENERIC_9x3, id, inventory, container, 3);
+    private ClassType selection;
+    public ClassSelection(int id, Inventory inventory, InventoryWrapper wrapper) {
+        super(MenuType.GENERIC_9x3, id, inventory, wrapper, 3);
+        this.inv=wrapper;
     }
 
     @Override
     public void setup() {
         previous = CTFPlayerData.get(player).getClassType();
+        selection=previous;
         fillGlass();
         classSlots = new GUISlot[4];
         ItemStack miner = Items.DIAMOND_PICKAXE.getDefaultInstance();
@@ -81,13 +85,13 @@ public class ClassSelection extends ChestGUIMenu {
                 .withLineAdded(literal("+Respawns: Stone Pickaxe, Stone Axe, Stone Sword, Bow, 16 Arrows"))
                 .withLineAdded(literal("+Permanent Speed I in territory only"))
                 .withLineAdded(literal("+Scrounging: Receives 1 arrow per second, up to 64, Can reduce generation rate and arrow cap in exchange for potion arrows. Only rangers can use these arrows."))
-                .withLineAdded(literal("+20% increase ranged weapon damage."))
+                .withLineAdded(literal("+15% increased arrow damage."))
                 .withLineAdded(literal("+Trident, Longbow, and Crossbow recipes available."))
                 .withLineAdded(literal("+Nobody expects.").withStyle(Style.EMPTY.withBold(true)))
         );
-        classSlot(0,ClassType.MINER,miner);
-        classSlot(1,ClassType.BUILDER,builder);
-        classSlot(2,ClassType.WARRIOR,warrior);
+        classSlot(0,ClassType.BREAKER,miner);
+        classSlot(1,ClassType.ARCHITECT,builder);
+        classSlot(2,ClassType.SLAYER,warrior);
         classSlot(3,ClassType.RANGER,ranger);
     }
 
@@ -112,8 +116,12 @@ public class ClassSelection extends ChestGUIMenu {
     }
 
     private void classSlot(int index, ClassType type, ItemStack stack){
-        stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE,CTFPlayerData.get(player).getClassType() == type);
-        overwrite(9+1+index*2,(c,s)->{
+        boolean set = CTFPlayerData.get(player).getClassType() == type;
+        stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE,set);
+        int cen = 9+1+index*2;
+        ItemStack yellow = Items.YELLOW_STAINED_GLASS_PANE.getDefaultInstance();
+        yellow.set(DataComponents.ITEM_NAME, Component.literal(""));
+        overwrite(cen,(c,s)->{
             classSlots[index] = new GUISlot(c,s);
             classSlots[index].onClick(sp->{
                 for (GUISlot classSlot : classSlots) {
@@ -122,9 +130,33 @@ public class ClassSelection extends ChestGUIMenu {
                 classSlots[index].getItem().set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE,true);
                 CTFPlayerData.get(sp).setClassType(type);
                 sp.playNotifySound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.MASTER,1f,1f);
+                sp.sendSystemMessage(Component.literal("Selected " + type.name() + " as your class."));
+                inv.getRange().forEach(i->{
+                   if(inv.getItemStack(i).getItem() == Items.YELLOW_STAINED_GLASS_PANE) {
+                       inv.setItem(i,ItemStack.EMPTY);
+                   }
+                });
+                overwrite(cen+1, GUISlot::new,yellow);
+                overwrite(cen-1, GUISlot::new,yellow);
+                overwrite(cen+1-9, GUISlot::new,yellow);
+                overwrite(cen-9, GUISlot::new,yellow);
+                overwrite(cen-1-9, GUISlot::new,yellow);
+                overwrite(cen+1+9, GUISlot::new,yellow);
+                overwrite(cen+9, GUISlot::new,yellow);
+                overwrite(cen-1+9, GUISlot::new,yellow);
                 return true;
             });
             return classSlots[index];
         },stack);
+        if(set){
+            overwrite(cen+1, GUISlot::new,yellow);
+            overwrite(cen-1, GUISlot::new,yellow);
+            overwrite(cen+1-9, GUISlot::new,yellow);
+            overwrite(cen-9, GUISlot::new,yellow);
+            overwrite(cen-1-9, GUISlot::new,yellow);
+            overwrite(cen+1+9, GUISlot::new,yellow);
+            overwrite(cen+9, GUISlot::new,yellow);
+            overwrite(cen-1+9, GUISlot::new,yellow);
+        }
     }
 }

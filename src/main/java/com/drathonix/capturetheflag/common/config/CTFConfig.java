@@ -44,6 +44,8 @@ public class CTFConfig {
 
     @Save(description = "Time in seconds during which a player is immune in the flag room.")
     public static long safetyDuration=15;
+    @Save(description = "Levels players start with.")
+    public static int startingLevels = 4;
 
     public static void init() {
         {

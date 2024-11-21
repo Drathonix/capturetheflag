@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,7 +35,7 @@ public class GameGenerator {
     public static String path = "config/capturetheflag/generator.txt";
 
     @Save(description = "Number of blocks the border is from the central game position.")
-    public static int borderRadius = 195;
+    public static int borderRadius = 210;
 
     @Save(description = "Holy enchanter generation settings.")
     public static HolyEnchanterGenerator holyEnchanter = new HolyEnchanterGenerator();
@@ -44,6 +45,9 @@ public class GameGenerator {
 
     @Save(description = "Flag generator generation settings.")
     public static FlagGenerator flags = new FlagGenerator();
+
+    @Save(description = "Spawn generator generation settings.")
+    public static SpawnGenerator spawns = new SpawnGenerator();
 
     @Save(description = "The waiting box generation settings")
     public static WaitingBoxGenerator waitingBox = new WaitingBoxGenerator();
@@ -83,15 +87,22 @@ public class GameGenerator {
 
     public static void generate(ServerLevel level, BlockPos center){
         GameDataCache.clearAndSave();
+        CTF.server.setDifficulty(Difficulty.PEACEFUL,true);
         for (Quadrant value : Quadrant.values()) {
             value.createAABB(center,borderRadius,level.getMaxY(),level.getMinY());
         }
+        for (TeamState value : TeamState.values()) {
+            GameDataCache.protect(value.getQuadrant().castedBoundingBox(), ProtectedRegion.Type.TERRITORY,value);
+        }
+
         setBorder(level,center);
         flags.generateForTeams(level,center);
+        spawns.generateForTeams(level,center);
         holyEnchanter.generate(level,center);
         if(bedrockWalls) {
             generateWalls(level, center);
         }
+        GameDataCache.save();
     }
 
     private static void generateWalls(ServerLevel level, BlockPos center) {
@@ -186,7 +197,7 @@ public class GameGenerator {
         @Save(description = "Number of holy enchanters to generate per quadrant")
         public int numberPerQuadrant = 2;
         @Save(description = "Min Distance from the border corner. Ensure this is 10 blocks greater than the flags.")
-        public int minSquareDistanceFromCorner = 90;
+        public int minSquareDistanceFromCorner = borderRadius-105;
         @Save(description = "Min Distance from center.")
         public int minDistanceFromCenter = 20;
 
@@ -204,18 +215,37 @@ public class GameGenerator {
         @Save(description = "Number of challenge spawners to generate per neutral quadrant")
         public int numberPerQuadrant = 3;
         @Save(description = "Min Distance from border.")
-        public int minDistanceFromBorder = 70;
+        public int minDistanceFromBorder = borderRadius-105;
         @Save(description = "Min Distance from center.")
         public int minDistanceFromCenter = 20;
     }
 
     public static class FlagGenerator {
-        @Save(description = "Distance from border.")
-        public int distanceFromBorder = 75;
+        @Save(description = "Distance from center.")
+        public int distanceFromCenter = 120;
 
         public void generate(ServerLevel level, BlockPos worldCenter, TeamState team) {
             StructureTemplate template = level.getStructureManager().get(ResourceLocation.fromNamespaceAndPath("capturetheflag", team == TeamState.BLUE ? "blue_flag" : "red_flag")).get();
-            CannotGenerateException e = generateStatic(level, team.getQuadrant(), template, new BlockPos(borderRadius - distanceFromBorder, level.getMaxY(), borderRadius - distanceFromBorder),worldCenter, ProtectedRegion.Type.FLAG);
+            CannotGenerateException e = generateStatic(level, team.getQuadrant(), template, new BlockPos(distanceFromCenter, level.getMaxY(), distanceFromCenter),worldCenter, ProtectedRegion.Type.FLAG);
+            if (e != null) {
+                throw e;
+            }
+        }
+
+        public void generateForTeams(ServerLevel level, BlockPos center) {
+            for (TeamState value : TeamState.values()) {
+                generate(level,center,value);
+            }
+        }
+    }
+
+    public static class SpawnGenerator {
+        @Save(description = "Distance from center.")
+        public int distanceFromCenter = 145;
+
+        public void generate(ServerLevel level, BlockPos worldCenter, TeamState team) {
+            StructureTemplate template = level.getStructureManager().get(ResourceLocation.fromNamespaceAndPath("capturetheflag", team == TeamState.BLUE ? "blue_spawn" : "red_spawn")).get();
+            CannotGenerateException e = generateStatic(level, team.getQuadrant(), template, new BlockPos(distanceFromCenter, level.getMaxY(), distanceFromCenter),worldCenter, ProtectedRegion.Type.SPAWN_ZONE);
             if (e != null) {
                 throw e;
             }
@@ -276,7 +306,7 @@ public class GameGenerator {
 
     private static void checkCollidesWithOtherStructure(BoundingBox box){
         for (ProtectedRegion region : GameDataCache.protectedRegions) {
-            if(region.aabb.intersects(box)){
+            if(region.type.blockStructures() && region.aabb.intersects(box)){
                 throw new CannotGenerateException("Structure will collide with another one");
             }
         }

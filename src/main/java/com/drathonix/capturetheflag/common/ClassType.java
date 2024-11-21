@@ -4,6 +4,7 @@ import com.drathonix.capturetheflag.common.system.SpecialAbility;
 import com.drathonix.capturetheflag.common.util.ToolTier;
 import com.drathonix.capturetheflag.common.util.ToolType;
 import com.drathonix.capturetheflag.common.util.regis.EnchantmentRetriever;
+import com.drathonix.capturetheflag.common.util.regis.ItemStackRetriever;
 import com.drathonix.capturetheflag.common.util.regis.MobEffectRetriever;
 import com.vicious.persist.annotations.C_NAME;
 import com.vicious.persist.annotations.Save;
@@ -15,6 +16,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 
@@ -24,12 +27,17 @@ import java.util.*;
 @SuppressWarnings("all")
 public enum ClassType {
     NONE,
-    MINER{
+    BREAKER {
         {
+            ItemStack stack = new ItemStack(Items.IRON_PICKAXE);
+            stack.enchant(location(Enchantments.FORTUNE).get(),1);
+            respawnGear.add(new ItemStackRetriever(stack,true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.STONE_SWORD),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.STONE_AXE),true));
+
             abilities.add(SpecialAbility.SMELTLER);
             passiveEffects.put(retriever(MobEffects.DIG_SPEED),1);
             territorialEffects.put(retriever(MobEffects.DIG_SPEED),2);
-            toolTiers.put(ToolType.PICKAXE,ToolTier.IRON);
             enchantments.put(location(Enchantments.FORTUNE), 3);
             enchantments.put(location(Enchantments.EFFICIENCY), 5);
             enchantments.put(location(Enchantments.KNOCKBACK), 2);
@@ -44,11 +52,15 @@ public enum ClassType {
             mobTargetChance=0.8F;
         }
     },
-    BUILDER{
+    ARCHITECT {
         {
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.IRON_PICKAXE),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.STONE_SWORD),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.IRON_AXE),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.IRON_SHOVEL),true));
+
             abilities.add(SpecialAbility.COBBLER);
             territorialEffects.put(retriever(MobEffects.REGENERATION),1);
-            toolTiers.put(ToolType.SHOVEL,ToolTier.IRON);
             enchantments.put(location(Enchantments.INFINITY), 1);
             enchantments.put(location(Enchantments.KNOCKBACK), 2);
             enchantments.put(location(Enchantments.PUNCH), 1);
@@ -63,14 +75,17 @@ public enum ClassType {
             mobDamageTakenMultiplier=0.6F;
             playerDamageTakenMultiplier=0.95F;
             mobTargetChance=0.7F;
-            arrowDamageTakenMultiplier=0.1F;
+            arrowDamageTakenMultiplier=0.9F;
         }
     },
-    WARRIOR{
+    SLAYER {
         {
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.IRON_PICKAXE),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.IRON_SWORD),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.STONE_AXE),true));
+
             abilities.add(SpecialAbility.BLOODLUST);
-            passiveEffects.put(retriever(MobEffects.HEALTH_BOOST),2);
-            toolTiers.put(ToolType.SWORD,ToolTier.IRON);
+            passiveEffects.put(retriever(MobEffects.HEALTH_BOOST),1);
             enchantments.put(location(Enchantments.SHARPNESS),3);
             enchantments.put(location(Enchantments.THORNS),1);
             enchantments.put(location(Enchantments.FIRE_ASPECT),2);
@@ -85,6 +100,12 @@ public enum ClassType {
     },
     RANGER {
         {
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.IRON_PICKAXE),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.STONE_SWORD),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.STONE_AXE),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.BOW),true));
+            respawnGear.add(new ItemStackRetriever(new ItemStack(Items.ARROW,8)));
+
             abilities.add(SpecialAbility.SCROUNGER);
             enchantments.put(location(Enchantments.FLAME),1);
             enchantments.put(location(Enchantments.CHANNELING), 1);
@@ -92,10 +113,8 @@ public enum ClassType {
             enchantments.put(location(Enchantments.MULTISHOT), 1);
             enchantments.put(location(Enchantments.PUNCH), 2);
             enchantments.put(location(Enchantments.PIERCING), 4);
-            enchantments.put(location(Enchantments.POWER), 4);
-            bowRespawn = true;
-            arrowRespawnAmount = 16;
-            arrowDamageMultiplier=1.2F;
+            enchantments.put(location(Enchantments.POWER), 3);
+            arrowDamageMultiplier=1.10F;
 
             recipes.add(ResourceLocation.fromNamespaceAndPath("minecraft","crossbow"));
             recipes.add(ResourceLocation.fromNamespaceAndPath(CTF.modid,"trident"));
@@ -128,9 +147,9 @@ public enum ClassType {
     @Save(description = "Enchantments and their max power levels this class has access to.")
     public Map<EnchantmentRetriever, Integer> enchantments = new HashMap<>();
 
-    @Typing({ToolType.class,ToolTier.class})
-    @Save(description = "Tools to respawn with")
-    public EnumMap<ToolType, ToolTier> toolTiers = new EnumMap<>(ToolType.class);
+    @Save(description = "Items to respawn with")
+    @Typing(ItemStackRetriever.class)
+    public List<ItemStackRetriever> respawnGear = new ArrayList<>();
 
     @Save(description = "The special passive abilities this class has.")
     @Typing(SpecialAbility.class)
@@ -139,15 +158,6 @@ public enum ClassType {
     @Save(description = "Special recipes only this class has access to.")
     @Typing(ResourceLocation.class)
     public Set<ResourceLocation> recipes = new HashSet<>();
-
-    @Save(description = "Determines if the class respawns with a bow.")
-    public boolean bowRespawn = false;
-
-    @Save(description = "Number of arrows to respawn with")
-    public int arrowRespawnAmount = 0;
-
-    @Save(description = "Amount of steak to respawn with")
-    public int steakRespawnAmount = 12;
 
     @Save(description = "Multiplies the resulting arrow dammage dealt.")
     public float arrowDamageMultiplier=1F;
@@ -164,9 +174,8 @@ public enum ClassType {
     @Save(description = "Changes the likelihood of a player being detected by an entity.")
     public float mobTargetChance = 1F;
     ClassType(){
-        toolTiers.put(ToolType.PICKAXE, ToolTier.STONE);
-        toolTiers.put(ToolType.SWORD, ToolTier.STONE);
-        toolTiers.put(ToolType.AXE, ToolTier.STONE);
+        respawnGear.add(new ItemStackRetriever(new ItemStack(Items.COOKED_BEEF,12)));
+
         enchantments.put(location(Enchantments.PROTECTION), 2);
         enchantments.put(location(Enchantments.UNBREAKING), 3);
         enchantments.put(location(Enchantments.PROJECTILE_PROTECTION), 3);
@@ -194,13 +203,13 @@ public enum ClassType {
 
     public String wikiURL() {
         return switch (this){
-            case MINER -> {
+            case BREAKER -> {
                 yield "https://github.com/Drathonix/capturetheflag/wiki/breaker";
             }
-            case BUILDER -> {
+            case ARCHITECT -> {
                 yield "https://github.com/Drathonix/capturetheflag/wiki/architect";
             }
-            case WARRIOR -> {
+            case SLAYER -> {
                 yield "https://github.com/Drathonix/capturetheflag/wiki/slayer";
             }
             case RANGER -> {

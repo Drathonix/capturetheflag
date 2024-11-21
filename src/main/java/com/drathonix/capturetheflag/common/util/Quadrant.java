@@ -4,6 +4,7 @@ import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -143,5 +144,9 @@ public enum Quadrant {
                 consumer.accept(p1);
             }
         }
+    }
+
+    public BoundingBox castedBoundingBox() {
+        return new BoundingBox((int)boundingBox.minX,(int)boundingBox.minY,(int)boundingBox.minZ,(int)boundingBox.maxX,(int)boundingBox.maxY,(int)boundingBox.maxZ);
     }
 }

@@ -39,12 +39,12 @@ public class CTFScoreboard  {
 
     public static void tick(MinecraftServer server){
         ScoreAccess access = server.getScoreboard().getOrCreatePlayerScore(ScoreHolder.forNameOnly("Phase Time: "),timeObjective,true);
-        access.set((int)GameDataCache.timeRemaining());
+        access.set((int)GameDataCache.timeValue());
     }
 
     public static void updateSB(){
         ScoreAccess access = CTF.server.getScoreboard().getOrCreatePlayerScore(ScoreHolder.forNameOnly("Phase Time: "),timeObjective,true);
-        access.set((int)GameDataCache.timeRemaining());
+        access.set((int)GameDataCache.timeValue());
         access = CTF.server.getScoreboard().getOrCreatePlayerScore(ScoreHolder.forNameOnly("Red Flags: "),timeObjective,true);
         access.set(TeamState.RED.flagsCaptured);
         access = CTF.server.getScoreboard().getOrCreatePlayerScore(ScoreHolder.forNameOnly("Blue Flags: "),timeObjective,true);

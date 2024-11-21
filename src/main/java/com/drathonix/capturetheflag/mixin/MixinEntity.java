@@ -27,6 +27,8 @@ public abstract class MixinEntity implements IMixinEntity {
 
     @Shadow public abstract AABB getBoundingBox();
 
+    @Shadow public abstract boolean onGround();
+
     @Inject(method = "isNoGravity",at = @At("HEAD"),cancellable = true)
     public void cancelPhysics(CallbackInfoReturnable<Boolean> cir){
         if(ctf$isSpecial()){

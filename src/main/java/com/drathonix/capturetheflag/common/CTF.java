@@ -47,9 +47,8 @@ public class CTF {
 
     public static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     public static MinecraftServer server;
-    public static Gson gson = new Gson();
 
-    public static void init(){
+    public static void init() {
         Persist.doC_NAMEScan();
         Stringify.register(ResourceLocation.class, CTF::safeRL,CTF::safeRL);
         Stringify.register(Component.class,CTF::parseComponent, CTF::componentJsonify);
@@ -58,11 +57,14 @@ public class CTF {
             String[] sep = str.split("/");
             return new BlockPos(Integer.parseInt(sep[0]),Integer.parseInt(sep[1]),Integer.parseInt(sep[2]));
         },pos-> pos.getX() + "/" + pos.getY() + "/" + pos.getZ());
-        Configs.reload();
         CTFEventHandler.init();
         CommandRegistrationEvent.EVENT.register((dispatcher,registry,selection)->{
             CTFCommands.init(dispatcher);
         });
+    }
+
+    public static void postServerInitted(){
+        Configs.reload();
         executor.scheduleAtFixedRate(GameDataCache::save,60,60, TimeUnit.SECONDS);
         /*TickEvent.ServerLevelTick.SERVER_POST.register(server->{
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -89,10 +91,12 @@ public class CTF {
     public synchronized static void respawn(ServerPlayer sp){
         sp.addEffect(new MobEffectInstance(MobEffects.SATURATION,15));
         CTFPlayerData data = CTFPlayerData.get(sp);
+        data.requireTeam(team->{
+            sp.setRespawnPosition(CTF.server.overworld().dimension(),team.getSpawn(),0f,true,false);
+        });
         data.requireClassType(type->{
-            sp.getInventory().add(new ItemStack(Items.COOKED_BEEF,type.steakRespawnAmount));
-            type.toolTiers.forEach((toolType,tier)->{
-                sp.getInventory().add(toolType.getItem(tier));
+            type.respawnGear.forEach(item->{
+                sp.getInventory().add(item.get());
             });
             type.onRespawn(sp);
         });

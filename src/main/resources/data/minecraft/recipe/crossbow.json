@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:barrier"
+  },
+  "pattern": [
+    "   ",
+    " B ",
+    "   "
+  ],
+  "result": {
+    "count": 1,
+    "id": "minecraft:crossbow",
+    "components": {
+      "minecraft:item_name": "{\"text\": \"Recipe Disabled\",\"color\": \"dark_red\",\"bold\":true}"
+    }
+  }
+}

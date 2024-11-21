@@ -1,6 +1,7 @@
 package com.drathonix.capturetheflag.common.system;
 
 import com.drathonix.capturetheflag.common.CTF;
+import com.drathonix.capturetheflag.common.config.CTFConfig;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
 import com.drathonix.capturetheflag.common.system.phasing.GamePhase;
 import com.drathonix.capturetheflag.common.system.phasing.GamePhaseConfig;
@@ -19,6 +20,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -150,15 +152,12 @@ public class GameDataCache {
     public static void tickSecond(MinecraftServer server){
         GamePhase phase = getGamePhase();
         if(phase.periodSeconds == -1){
+            CTFScoreboard.tick(server);
             return;
         }
         else if(periodSeconds >= phase.periodSeconds){
-            phase.onEnd();
-            gamePhaseIndex++;
-            gamePhaseIndex = Math.min(gamePhaseIndex,GamePhaseConfig.phases.size());
-            phase = getGamePhase();
-            periodSeconds=0;
-            phase.onStart();
+            nextPhase();
+            return;
         }
         else{
             phase.onTick(periodSeconds);
@@ -197,12 +196,14 @@ public class GameDataCache {
                 CTFPlayerData.get(player).requireClassType(c->{
                     CTF.respawn(player);
                 });
+                player.giveExperienceLevels(CTFConfig.startingLevels);
             }
         }
         CTF.server.overworld().setDayTime(6000);
         CTF.server.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false,CTF.server);
         CTF.server.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false,CTF.server);
         CTF.server.overworld().resetWeatherCycle();
+        CTF.server.setDifficulty(Difficulty.NORMAL,true);
         periodSeconds=0;
     }
 
@@ -242,5 +243,26 @@ public class GameDataCache {
 
     public static long timeRemaining() {
         return getGamePhase().periodSeconds-periodSeconds;
+    }
+
+    public static long timeValue() {
+        if(getGamePhase().periodSeconds == -1){
+            return periodSeconds;
+        }
+        else{
+            return timeRemaining();
+        }
+    }
+
+    public static void nextPhase() {
+        GamePhase old = getGamePhase();
+        old.onEnd();
+        gamePhaseIndex++;
+        gamePhaseIndex = Math.min(gamePhaseIndex,GamePhaseConfig.phases.size());
+        GamePhase phase = getGamePhase();
+        periodSeconds=0;
+        if(phase != old) {
+            phase.onStart();
+        }
     }
 }

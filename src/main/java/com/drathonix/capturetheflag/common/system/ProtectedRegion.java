@@ -1,6 +1,7 @@
 package com.drathonix.capturetheflag.common.system;
 
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
+import com.drathonix.capturetheflag.common.system.phasing.PhaseFlag;
 import com.vicious.persist.annotations.Save;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -33,6 +34,48 @@ public class ProtectedRegion {
 
     public enum Type {
         GENERIC_AREA_PROTECTOR,
+        TERRITORY{
+            @Override
+            public boolean allowEntry(ServerLevel level, BlockPos pos, ProtectedRegion region, ServerPlayer player) {
+                if(region.team != TeamState.get(player)){
+                    return !GameDataCache.getGamePhase().flags.contains(PhaseFlag.RESTRICTED);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean allowHurtByEntity(ServerLevel level, BlockPos pos, ProtectedRegion region, ServerPlayer inside, Entity outside) {
+                if (outside instanceof ServerPlayer) {
+                    return !GameDataCache.getGamePhase().flags.contains(PhaseFlag.RESTRICTED);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean allowNaturalBlockChange() {
+                return true;
+            }
+
+            @Override
+            public boolean allowBlockPlace(ServerLevel level, BlockPos pos, ProtectedRegion region, ServerPlayer player) {
+                return true;
+            }
+
+            @Override
+            public boolean allowBlockInteract(ServerLevel level, BlockPos pos, ProtectedRegion region, ServerPlayer player) {
+                return true;
+            }
+
+            @Override
+            public boolean allowBlockBreak(ServerLevel level, BlockPos pos, ProtectedRegion region, ServerPlayer player) {
+                return true;
+            }
+
+            @Override
+            public boolean blockStructures() {
+                return false;
+            }
+        },
         HOLY_ENCHANTER{
             @Override
             public boolean allowBlockInteract(ServerLevel level, BlockPos pos, ProtectedRegion region, ServerPlayer player) {
@@ -95,6 +138,14 @@ public class ProtectedRegion {
             return true;
         }
         public boolean allowEntry(ServerLevel level, BlockPos pos, ProtectedRegion region, ServerPlayer player){
+            return true;
+        }
+
+        public boolean allowNaturalBlockChange() {
+            return false;
+        }
+
+        public boolean blockStructures() {
             return true;
         }
     }

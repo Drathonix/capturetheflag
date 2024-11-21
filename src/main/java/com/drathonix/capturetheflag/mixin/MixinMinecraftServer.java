@@ -23,6 +23,7 @@ public class MixinMinecraftServer {
     @Inject(method = "<init>",at = @At("RETURN"))
     public void capture(Thread thread, LevelStorageSource.LevelStorageAccess levelStorageAccess, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer dataFixer, Services services, ChunkProgressListenerFactory chunkProgressListenerFactory, CallbackInfo ci){
         CTF.server = MinecraftServer.class.cast(this);
+        CTF.postServerInitted();
     }
 
     @Inject(method="readScoreboard",at = @At("RETURN"))

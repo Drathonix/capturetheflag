@@ -21,6 +21,7 @@
         "ctf_custom_item": "REFLECTORSHIELD"
       },
       "minecraft:item_name": "{\"text\": \"Mirror Shield\",\"color\": \"aqua\",\"bold\":true}",
+      "minecraft:enchantments": {"levels": {"minecraft:unbreaking": 1}},
       "minecraft:base_color": "black",
       "minecraft:banner_patterns": [{
         "color": "white",

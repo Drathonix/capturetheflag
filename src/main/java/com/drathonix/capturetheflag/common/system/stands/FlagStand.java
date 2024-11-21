@@ -47,11 +47,7 @@ public class FlagStand implements ArmorStandModifier {
                     if(data.getTeamState() != teamState){
                         teamState.takeTheFlag(player);
                     }
-                    else {
-                        teamState.captureTheFlag(player);
-                    }
                 }
-
             }
         }
     }

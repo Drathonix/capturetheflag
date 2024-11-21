@@ -2,15 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "D": "minecraft:diamond",
-    "C": "minecraft:copper_ingot",
-    "S": "minecraft:iron_shovel",
-    "B": "minecraft:stone_bricks"
+    "D": "minecraft:iron_block",
+    "I": "minecraft:iron_ingot",
+    "C": "minecraft:copper_block"
   },
   "pattern": [
-    "CBD",
-    "CSB",
-    "SCC"
+    " ID",
+    "ICI",
+    "CI "
   ],
   "show_notification": true,
   "result": {

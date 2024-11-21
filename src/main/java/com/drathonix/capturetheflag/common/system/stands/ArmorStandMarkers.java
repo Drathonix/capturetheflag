@@ -59,6 +59,8 @@ public class ArmorStandMarkers {
     static {
         registerModifier(blueFlag, new FlagStand(TeamState.BLUE));
         registerModifier(redFlag, new FlagStand(TeamState.RED));
+        registerModifier(blueSpawn, new SpawnStand(TeamState.BLUE));
+        registerModifier(redSpawn, new SpawnStand(TeamState.RED));
         registerModifier(clearBeacon, new BeaconStand());
     }
 }

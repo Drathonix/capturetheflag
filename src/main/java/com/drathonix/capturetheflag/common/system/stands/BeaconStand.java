@@ -26,6 +26,7 @@ public class BeaconStand implements ArmorStandModifier{
             level.setBlock(pos, Blocks.AIR.defaultBlockState(),0);
             pos = pos.offset(0,1,0);
         }
+        pos = stand.blockPosition();
         BoundingBox box = new BoundingBox(pos.getX(),pos.getY(),pos.getZ(),pos.getX()+1,level.getMaxY(),pos.getZ()+1);
         GameDataCache.protect(box, ProtectedRegion.Type.GENERIC_AREA_PROTECTOR);
         stand.setInvisible(true);

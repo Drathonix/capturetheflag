@@ -2,11 +2,9 @@ package com.drathonix.capturetheflag.mixin;
 
 import com.drathonix.capturetheflag.common.ClassType;
 import com.drathonix.capturetheflag.common.bridge.IMixinServerPlayer;
-import com.drathonix.capturetheflag.common.config.CTFConfig;
 import com.drathonix.capturetheflag.common.config.ItemsConfig;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
 import com.drathonix.capturetheflag.common.system.CustomItem;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -18,11 +16,9 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
@@ -47,7 +43,7 @@ public abstract class MixinLivingEntity extends MixinEntity{
             Entity e = damageSource.getDirectEntity();
             serverLevel.registryAccess().get(DamageTypes.THORNS).ifPresent(thorns->{
                 float pwr = ItemsConfig.reflectorShieldPower;
-                if(this instanceof IMixinServerPlayer mixin && mixin.ctf$getData().getClassType() == ClassType.WARRIOR) {
+                if(this instanceof IMixinServerPlayer mixin && mixin.ctf$getData().getClassType() == ClassType.SLAYER) {
                     pwr = ItemsConfig.reflectorShieldPowerWarrior;
                 }
                 e.hurtServer(serverLevel, new DamageSource(thorns, damageSource.getDirectEntity(), LivingEntity.class.cast(this)), f * pwr);

@@ -115,9 +115,11 @@ public class CTFEventHandler {
             if(GameDataCache.viewProtectedRegionsAt(sp.blockPosition(),region->region.type.allowAttackOther(sp.serverLevel(),sp.blockPosition(),region,sp,livingEntity) ? null : true,()->false)){
                 return EventResult.interruptFalse();
             }
-            CTFPlayerData data = CTFPlayerData.get(sp);
-            if(data.getTeamState() != null) {
-                if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.RESTRICTED) && data.getTeamState().getOpposite().isWithinTerritory(livingEntity)) {
+            if(livingEntity instanceof ServerPlayer victim && GameDataCache.viewProtectedRegionsAt(livingEntity.blockPosition(),region->region.type.allowHurtByEntity(victim.serverLevel(),victim.blockPosition(),region,victim,sp) ? null : true,()->false)){
+                return EventResult.interruptFalse();
+            }
+            if(livingEntity instanceof ServerPlayer victim){
+                if(TeamState.get(victim) == TeamState.get(sp)){
                     return EventResult.interruptFalse();
                 }
             }
@@ -181,7 +183,7 @@ public class CTFEventHandler {
                 ItemStack mainHand = sp.getItemInHand(InteractionHand.MAIN_HAND);
                 Block block = ((BlockItem) mainHand.getItem()).getBlock();
                 CTFPlayerData.get(sp).requireClassType(type -> {
-                    int k = type == ClassType.BUILDER ? ItemsConfig.brickLayerPlacementBuilder : ItemsConfig.brickLayerPlacement;
+                    int k = type == ClassType.ARCHITECT ? ItemsConfig.brickLayerPlacementBuilder : ItemsConfig.brickLayerPlacement;
                     BlockPos ps = pk;
                     while (level.getEntitiesOfClass(LivingEntity.class,new AABB(ps).inflate(0.25D)).isEmpty() && !mainHand.isEmpty() && k > 0 && level.isInWorldBounds(ps) && !isPast(placer.blockPosition(),pk,dir)) {
                         try {

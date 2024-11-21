@@ -26,7 +26,7 @@ public class ItemsConfig {
     @Save
     public static float longBowDamageMultiplier = 0.43F;
     @Save
-    public static float longBowDamageMultiplierRanger = 0.55F;
+    public static float longBowDamageMultiplierRanger = 0.575F;
 
     @Save
     public static int brickLayerPlacement = 3;

@@ -129,16 +129,9 @@ public enum TeamState {
     }
 
     public void onStart(){
-        BlockPos spwn = getSpawn();
-        if(spwn == null){
-            throw new RuntimeException("Bad spawn");
-        }
-        Vec3 cnt = spwn.getCenter();
         for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
-            CTFPlayerData data = CTFPlayerData.get(player);
-            if(data.getTeamState() == this){
-                player.setRespawnPosition(CTF.server.overworld().dimension(),getSpawn(),0f,true,false);
-                player.teleportTo(cnt.x,cnt.y,cnt.z);
+            if(get(player) == this) {
+                onStart(player);
             }
         }
     }
@@ -169,5 +162,15 @@ public enum TeamState {
 
     public static @Nullable TeamState get(ServerPlayer player){
         return CTFPlayerData.get(player).getTeamState();
+    }
+
+    public void onStart(ServerPlayer player) {
+        BlockPos spwn = getSpawn();
+        if(spwn == null){
+            throw new RuntimeException("Bad spawn");
+        }
+        Vec3 cnt = spwn.getCenter();
+        player.setRespawnPosition(CTF.server.overworld().dimension(),spwn,0f,true,false);
+        player.teleportTo(cnt.x,cnt.y,cnt.z);
     }
 }

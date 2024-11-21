@@ -1,39 +1,27 @@
 package com.drathonix.capturetheflag.mixin;
 
-import com.drathonix.capturetheflag.common.CTF;
 import com.drathonix.capturetheflag.common.ClassType;
 import com.drathonix.capturetheflag.common.bridge.IMixinServerPlayer;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
 import com.drathonix.capturetheflag.common.system.*;
 import com.drathonix.capturetheflag.common.system.phasing.PhaseFlag;
-import com.drathonix.capturetheflag.common.util.Quadrant;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.commands.ParticleCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -43,10 +31,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.awt.*;
 
 @Mixin(ServerPlayer.class)
 public abstract class MixinServerPlayer extends MixinPlayer implements IMixinServerPlayer {
@@ -85,6 +70,7 @@ public abstract class MixinServerPlayer extends MixinPlayer implements IMixinSer
     private int ctf$counter = 1;
     @Inject(method = "tick",at = @At("RETURN"))
     public synchronized void playerTick(CallbackInfo ci){
+        ServerPlayer sp = (ServerPlayer) (Object) this;
         if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.WAITING_BOX)){
             if(GameGenerator.waitingBox.aabb != null && !GameGenerator.waitingBox.aabb.intersects(getBoundingBox())){
                 Vec3 dest = new Vec3(GameDataCache.center.atY(0).above(GameGenerator.waitingBox.y+1));
@@ -92,7 +78,6 @@ public abstract class MixinServerPlayer extends MixinPlayer implements IMixinSer
             }
         }
         if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.IN_PLAY)) {
-            ServerPlayer sp = (ServerPlayer) (Object) this;
             ctf$pdata.requireClassType(type -> {
                 ctf$pdata.requireTeam(team -> {
                     if (ctf$counter % 20 == 0) {
@@ -133,7 +118,7 @@ public abstract class MixinServerPlayer extends MixinPlayer implements IMixinSer
                         map.removeAttributeModifiers(multimap);
                     }
                 } else {
-                    if (type == ClassType.BUILDER) {
+                    if (type == ClassType.ARCHITECT) {
                         if (!map.hasModifier(Attributes.BLOCK_INTERACTION_RANGE, CTFAttribute.brickLayerRange.id())) {
                             Multimap<Holder<Attribute>, AttributeModifier> multimap = HashMultimap.create();
                             multimap.put(Attributes.BLOCK_INTERACTION_RANGE, CTFAttribute.brickLayerRange);
@@ -162,25 +147,33 @@ public abstract class MixinServerPlayer extends MixinPlayer implements IMixinSer
                     }
                 }
             }
-            if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.RESTRICTED)) {
-                ctf$pdata.requireTeam(team -> {
-                    if (team.getOpposite().isWithinTerritory((ServerPlayer) (Object) this)) {
-                        BlockPos spwn = team.getSpawn();
-                        if (spwn != null) {
-                            Vec3 dest = spwn.getCenter();
-                            if (ctf$previous != null && !team.getOpposite().isWithinTerritory(ctf$previous)) {
-                                dest = new Vec3(ctf$previous);
-                            }
-                            teleportTo(dest.x, dest.y, dest.z);
-                            sendSystemMessage(Component.literal("You cannot enter the enemy base at this time."));
+            ctf$pdata.requireTeam(team->{
+                if(GameDataCache.viewProtectedRegionsAt(blockPosition(),region->region.type.allowEntry(serverLevel(),blockPosition(),region,sp) ? null : true,()->false)){
+                    BlockPos spwn = team.getSpawn();
+                    if (spwn != null) {
+                        Vec3 dest = spwn.getCenter();
+                        if (ctf$previous != null && GameDataCache.viewProtectedRegionsAt(ctf$previous,region->region.type.allowEntry(serverLevel(),ctf$previous,region,sp) ? null : false,()->true)) {
+                            dest = new Vec3(ctf$previous);
                         }
+                        teleportTo(dest.x, dest.y, dest.z);
+                        sendSystemMessage(Component.literal("You cannot enter this area."));
                     }
-                });
-            }
+                }
+                if(ctf$pdata.hasFlag() && GameDataCache.viewProtectedRegionsAt(blockPosition(),region->{
+                    if(region.team == team && region.type == ProtectedRegion.Type.SPAWN_ZONE){
+                        return true;
+                    }
+                    return null;
+                },()->false)){
+                    team.captureTheFlag(sp);
+                }
+            });
             if (ctf$counter >= 1000) {
                 ctf$counter = 1;
             }
-            ctf$previous = blockPosition();
+            if(onGround()) {
+                ctf$previous = blockPosition();
+            }
             ctf$counter++;
         }
     }

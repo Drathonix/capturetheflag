@@ -28,11 +28,11 @@ public class GamePhaseConfig {
                 .displayName("Waiting")
                 .flags(PhaseFlag.INFINITE_CLASS_SWAP,PhaseFlag.WAITING_BOX, PhaseFlag.INVULN));
         phases.add(GamePhase.of("starting")
-                .period(30)
+                .period(15)
                 .displayName("Starting")
                 .flags(PhaseFlag.INFINITE_CLASS_SWAP,PhaseFlag.INITIALIZER,PhaseFlag.INVULN, PhaseFlag.FREEZE));
         phases.add(GamePhase.of("preparation1")
-                .period(30*60)
+                .period(25*60)
                 .displayName("Preparation")
                 .flags(PhaseFlag.ONE_CLASS_SWAP,PhaseFlag.RESTRICTED,PhaseFlag.HOME,PhaseFlag.IN_PLAY));
         phases.add(GamePhase.of("combat1")
@@ -44,7 +44,7 @@ public class GamePhaseConfig {
                 .displayName("Recovery")
                 .flags(PhaseFlag.ONE_CLASS_SWAP,PhaseFlag.RESTRICTED,PhaseFlag.HOME,PhaseFlag.IN_PLAY));
         phases.add(GamePhase.of("combat2")
-                .period(30*60)
+                .period(-1)
                 .displayName("Combat")
                 .flags(PhaseFlag.IN_PLAY));
         phases.add(GamePhase.of("finished")
