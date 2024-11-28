@@ -4,6 +4,7 @@ import com.drathonix.capturetheflag.common.CTF;
 import com.drathonix.capturetheflag.common.ClassType;
 import com.drathonix.capturetheflag.common.config.CTFConfig;
 import com.drathonix.capturetheflag.common.gui.ClassSelection;
+import com.drathonix.capturetheflag.common.gui.SkillSelection;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
 import com.drathonix.capturetheflag.common.system.phasing.PhaseFlag;
 import com.drathonix.capturetheflag.common.util.GeneralUtil;
@@ -27,18 +28,41 @@ import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Random;
 
 
 public class CTFCommands {
     public static void init(CommandDispatcher<CommandSourceStack> dispatcher){
         dispatcher.register(Commands.literal("class").executes(ctx->{
-            if(ctx.getSource().getEntity() instanceof ServerPlayer sp){
-                if(CTFPlayerData.get(sp).allowChangeClass){
-                    sp.openMenu(new SimpleMenuProvider((id, inv, player)-> new ClassSelection(id,inv, InventoryWrapper.of(NonNullList.withSize(9*3, ItemStack.EMPTY),0)), Component.literal("Class Selection").withStyle(Style.EMPTY.withBold(true).withColor(Color.GREEN.getRGB()))));
+            try {
+                if (ctx.getSource().getEntity() instanceof ServerPlayer sp) {
+                    if (GameDataCache.getGamePhase().flags.contains(PhaseFlag.INFINITE_CLASS_SWAP)) {
+                        ClassSelection.open(sp, false);
+                    } else {
+                        sp.sendSystemMessage(Component.literal("You cannot change your class right now.").withStyle(ChatFormatting.RED));
+                    }
                 }
-                else{
-                    sp.sendSystemMessage(Component.literal("You cannot change your class right now.").withStyle(ChatFormatting.RED));
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            return 1;
+        }));
+        dispatcher.register(Commands.literal("skills").executes(ctx->{
+            try {
+                if (ctx.getSource().getEntity() instanceof ServerPlayer sp) {
+                    if (GameDataCache.getGamePhase().flags.contains(PhaseFlag.INFINITE_CLASS_SWAP)) {
+                        if (CTFPlayerData.get(sp).getClassType() != null) {
+                            SkillSelection.open(sp, false);
+                        } else {
+                            ClassSelection.open(sp, false);
+                            sp.sendSystemMessage(Component.literal("You need to select a class first.").withStyle(ChatFormatting.RED));
+                        }
+                    } else {
+                        sp.sendSystemMessage(Component.literal("You cannot change your skills right now.").withStyle(ChatFormatting.RED));
+                    }
                 }
+            } catch (Exception e){
+                e.printStackTrace();
             }
             return 1;
         }));
@@ -56,7 +80,7 @@ public class CTFCommands {
                         data.homeCooldownEnd =System.currentTimeMillis()+5*60*1000;
                     }
                     else{
-                        sp.sendSystemMessage(Component.literal("/flag is on cooldown for " + GeneralUtil.convertSeconds(data.homeCooldownEnd) + ", cannot teleport.").withStyle(ChatFormatting.RED));
+                        sp.sendSystemMessage(Component.literal("/spawn is on cooldown for " + GeneralUtil.convertSeconds((data.homeCooldownEnd-System.currentTimeMillis())/1000) + ", cannot teleport.").withStyle(ChatFormatting.RED));
                     }
                 });
             }
@@ -119,6 +143,21 @@ public class CTFCommands {
             }
             return 1;
         }));
+        dispatcher.register(Commands.literal("customitem").requires(ctx->ctx.hasPermission(Commands.LEVEL_MODERATORS)).then(Commands.argument("item",StringArgumentType.string()).executes(ctx->{
+            if(ctx.getSource().getEntity() instanceof ServerPlayer sp){
+                String name = StringArgumentType.getString(ctx, "item");
+                CustomItem item = null;
+                try{
+                    item = CustomItem.valueOf(name.toUpperCase());
+                } catch (Exception e){
+                    ctx.getSource().sendFailure(Component.literal("Invalid custom item."));
+                    return 1;
+                }
+                sp.getInventory().add(item.getAsStack(new Random()));
+                sp.sendSystemMessage(Component.literal("Given " + name + "!"));
+            }
+            return 1;
+        })));
         dispatcher.register(Commands.literal("wiki").executes(ctx->{
             String url = "https://github.com/Drathonix/capturetheflag/wiki/gameplay";
             if(ctx.getSource().getEntity() instanceof ServerPlayer sp){
@@ -163,9 +202,7 @@ public class CTFCommands {
                     if(!blueTeam.isEmpty()){
                         blueTeam.append(", ");
                     }
-                    else{
-                        blueTeam.append(player.getGameProfile().getName());
-                    }
+                    blueTeam.append(player.getGameProfile().getName());
                 }
                 else {
                     if(!redTeam.isEmpty()){

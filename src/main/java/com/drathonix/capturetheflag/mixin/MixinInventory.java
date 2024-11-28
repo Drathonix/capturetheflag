@@ -38,7 +38,7 @@ public class MixinInventory implements IMixinInventory {
                     if (original != null) {
                         ItemLore lore = ItemLore.EMPTY;
                         if (sb - 1 > 0) {
-                            lore = lore.withLineAdded(Component.literal("Soulbound " + (sb - 1)).withStyle(Style.EMPTY.withColor(ChatFormatting.LIGHT_PURPLE).withBold(true).withItalic(false)));
+                            lore = CustomDatas.addSoulBoundLore(lore,sb-1);
                         } else {
                             lore = lore.withLineAdded(Component.literal("Vanishing Curse").withStyle(Style.EMPTY.withColor(ChatFormatting.RED).withBold(true).withItalic(false)));
                         }
@@ -50,7 +50,23 @@ public class MixinInventory implements IMixinInventory {
                         list.set(i,itemstack);
                     }
                 } else {
-                    if (!itemstack.isEmpty()) {
+                    sb = CustomDatas.getLesserSoulBound(itemstack);
+                    if (sb > 0) {
+                        CustomDatas.setLesserSoulBound(itemstack, sb - 1);
+                        ItemLore original = itemstack.get(DataComponents.LORE);
+                        if (original != null) {
+                            ItemLore lore = ItemLore.EMPTY;
+                            if (sb - 1 > 0) {
+                                lore = CustomDatas.addSoulBoundLore(lore, sb - 1);
+                            }
+                            List<Component> comps = original.styledLines();
+                            for (int j = 1; j < comps.size(); j++) {
+                                lore = lore.withLineAdded(comps.get(j));
+                            }
+                            itemstack.set(DataComponents.LORE, lore);
+                            list.set(i,itemstack);
+                        }
+                    } else if (!itemstack.isEmpty()) {
                         this.player.drop(itemstack, true, false);
                         list.set(i, ItemStack.EMPTY);
                     }

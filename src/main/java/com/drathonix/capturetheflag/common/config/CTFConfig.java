@@ -46,6 +46,8 @@ public class CTFConfig {
     public static long safetyDuration=15;
     @Save(description = "Levels players start with.")
     public static int startingLevels = 4;
+    @Save(description = "Seconds to timeout players after failing a parkour too many times")
+    public static long parkourTimeout=60;
 
     public static void init() {
         {

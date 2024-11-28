@@ -5,6 +5,7 @@ import com.drathonix.capturetheflag.common.bridge.IMixinServerPlayer;
 import com.drathonix.capturetheflag.common.config.ItemsConfig;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
 import com.drathonix.capturetheflag.common.system.CustomItem;
+import com.drathonix.capturetheflag.common.system.Skill;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -14,6 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,6 +41,13 @@ public abstract class MixinLivingEntity extends MixinEntity{
     @Inject(method = "hurtServer",at = @At(value = "INVOKE",target = "Lnet/minecraft/world/entity/LivingEntity;hurtCurrentlyUsedShield(F)V"))
     public void reflectorShield(ServerLevel serverLevel, DamageSource damageSource, float f, CallbackInfoReturnable<Boolean> cir){
         ItemStack itemStack = this.getItemBlockingWith();
+        if(itemStack.getItem() == Items.SHIELD){
+            if(this instanceof IMixinServerPlayer mixin){
+                for (Skill skill : mixin.ctf$getData().getSkills()) {
+                    skill.onBlock(ServerPlayer.class.cast(this));
+                }
+            }
+        }
         if(CustomItem.REFLECTORSHIELD.is(itemStack)){
             Entity e = damageSource.getDirectEntity();
             serverLevel.registryAccess().get(DamageTypes.THORNS).ifPresent(thorns->{

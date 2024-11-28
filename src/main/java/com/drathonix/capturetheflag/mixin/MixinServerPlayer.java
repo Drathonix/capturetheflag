@@ -78,13 +78,14 @@ public abstract class MixinServerPlayer extends MixinPlayer implements IMixinSer
             }
         }
         if(GameDataCache.getGamePhase().flags.contains(PhaseFlag.IN_PLAY)) {
+            if (ctf$counter % 20 == 0) {
+                for (Skill skill : ctf$pdata.getSkills()) {
+                    skill.tickSecond(sp);
+                }
+            }
             ctf$pdata.requireClassType(type -> {
                 ctf$pdata.requireTeam(team -> {
-                    if (ctf$counter % 20 == 0) {
-                        for (SpecialAbility ability : type.abilities) {
-                            ability.tickSecond(sp);
-                        }
-                    }
+
                     if (ctf$counter % 100 == 0) {
                         if (team.isWithinTerritory(sp)) {
                             type.territorialEffects.forEach((effect, power) -> {
@@ -102,7 +103,7 @@ public abstract class MixinServerPlayer extends MixinPlayer implements IMixinSer
                         if (ctf$pdata.hasFlag()) {
                             sp.addEffect(new MobEffectInstance(MobEffects.GLOWING, 120, 0));
                         }
-                        sp.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, Integer.MAX_VALUE, 0));
+                        sp.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, Integer.MAX_VALUE, 0,false,false,false));
                     }
                 });
                 AttributeMap map = sp.getAttributes();

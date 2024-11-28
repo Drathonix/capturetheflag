@@ -3,6 +3,7 @@ package com.drathonix.capturetheflag.common.system;
 import com.drathonix.capturetheflag.common.CTF;
 import com.drathonix.capturetheflag.common.config.CTFConfig;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
+import com.drathonix.capturetheflag.common.system.parkour.ParkourChamber;
 import com.drathonix.capturetheflag.common.system.phasing.GamePhase;
 import com.drathonix.capturetheflag.common.system.phasing.GamePhaseConfig;
 import com.drathonix.capturetheflag.common.util.GeneralUtil;
@@ -17,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -62,6 +64,10 @@ public class GameDataCache {
     @Save
     @Typing(ProtectedRegion.class)
     public static List<ProtectedRegion> protectedRegions = new ArrayList<>();
+
+    @Save
+    @Typing(ParkourChamber.class)
+    public static List<ParkourChamber> parkourChambers = new ArrayList<>();
 
     @Save
     public static int gamePhaseIndex = 0;
@@ -163,6 +169,9 @@ public class GameDataCache {
             phase.onTick(periodSeconds);
         }
         periodSeconds++;
+        if(periodSeconds%300 == 0){
+            DidYouKnow.announce();
+        }
         CTFScoreboard.tick(server);
     }
 
@@ -172,6 +181,13 @@ public class GameDataCache {
         if(k <= p){
             k=p+1000;
             tickSecond(server);
+        }
+        ServerLevel world = server.overworld();
+        for (ParkourChamber chamber : parkourChambers) {
+            chamber.tick(world);
+        }
+        if(GameGenerator.parkourGenerator.needsUpdate()) {
+            GameGenerator.parkourGenerator.addGDCs(server.overworld());
         }
     }
 

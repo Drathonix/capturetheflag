@@ -2,6 +2,8 @@ package com.drathonix.capturetheflag.common.gui.base;
 
 import com.drathonix.capturetheflag.common.CTF;
 import com.drathonix.capturetheflag.common.injected.CTFPlayerData;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -11,6 +13,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +27,13 @@ public class ChestGUIMenu extends ChestMenu {
     protected final Inventory inventory;
     protected final ServerPlayer player;
     protected final CTFPlayerData data;
+
+    public static final ItemStack yellow = Items.YELLOW_STAINED_GLASS_PANE.getDefaultInstance();
+    public static final ItemStack black = Items.BLACK_STAINED_GLASS_PANE.getDefaultInstance();
+    static {
+        black.set(DataComponents.ITEM_NAME, Component.literal(""));
+        yellow.set(DataComponents.ITEM_NAME, Component.literal(""));
+    }
 
     private final Map<Integer,TickingGUISlot> tickables = new HashMap<>();
     private ScheduledFuture<?> tickTask;
@@ -108,5 +118,16 @@ public class ChestGUIMenu extends ChestMenu {
                 slot.handleTick(serverPlayer);
             });
         }
+    }
+
+    public void surround(int slot, ItemStack stack){
+        overwrite(slot +1, GUISlot::new,stack);
+        overwrite(slot -1, GUISlot::new,stack);
+        overwrite(slot +1-9, GUISlot::new,stack);
+        overwrite(slot -9, GUISlot::new,stack);
+        overwrite(slot -1-9, GUISlot::new,stack);
+        overwrite(slot +1+9, GUISlot::new,stack);
+        overwrite(slot +9, GUISlot::new,stack);
+        overwrite(slot -1+9, GUISlot::new,stack);
     }
 }

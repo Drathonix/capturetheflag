@@ -1,6 +1,8 @@
 package com.drathonix.capturetheflag.common.system;
 
 import com.drathonix.capturetheflag.common.CTF;
+import com.drathonix.capturetheflag.common.system.crystals.Crystal;
+import com.drathonix.capturetheflag.common.system.parkour.ParkourGenerator;
 import com.drathonix.capturetheflag.common.util.Quadrant;
 import com.drathonix.capturetheflag.common.util.regis.BlockRetriever;
 import com.vicious.persist.annotations.PersistentPath;
@@ -16,6 +18,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -26,7 +29,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
+import java.util.function.Function;
 
 public class GameGenerator {
     public static final RandomSource RANDOM = RandomSource.create();
@@ -52,6 +57,9 @@ public class GameGenerator {
     @Save(description = "The waiting box generation settings")
     public static WaitingBoxGenerator waitingBox = new WaitingBoxGenerator();
 
+    @Save(description = "Parkour Generator Settings")
+    public static ParkourGenerator parkourGenerator = new ParkourGenerator();
+
     @Save(description = "Valid ground blocks")
     @Typing(BlockRetriever.class)
     public static Set<BlockRetriever> groundBlocks = new HashSet<>();
@@ -73,8 +81,35 @@ public class GameGenerator {
         groundBlocks.add(new BlockRetriever(Blocks.DIRT));
         groundBlocks.add(new BlockRetriever(Blocks.SAND));
         groundBlocks.add(new BlockRetriever(Blocks.GRAVEL));
+        groundBlocks.add(new BlockRetriever(Blocks.CLAY));
+        groundBlocks.add(new BlockRetriever(Blocks.DRIPSTONE_BLOCK));
+        groundBlocks.add(new BlockRetriever(Blocks.MOSS_BLOCK));
         groundBlocks.add(new BlockRetriever(Blocks.STONE));
-        groundBlocks.add(new BlockRetriever(Blocks.DIRT_PATH));
+        groundBlocks.add(new BlockRetriever(Blocks.ANDESITE));
+        groundBlocks.add(new BlockRetriever(Blocks.GRANITE));
+        groundBlocks.add(new BlockRetriever(Blocks.DIORITE));
+        groundBlocks.add(new BlockRetriever(Blocks.DEEPSLATE));
+        groundBlocks.add(new BlockRetriever(Blocks.TUFF));
+        groundBlocks.add(new BlockRetriever(Blocks.SCULK));
+
+        groundBlocks.add(new BlockRetriever(Blocks.COAL_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.COPPER_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.IRON_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.GOLD_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.LAPIS_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.REDSTONE_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.DIAMOND_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.EMERALD_ORE));
+
+        groundBlocks.add(new BlockRetriever(Blocks.DEEPSLATE_COAL_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.DEEPSLATE_COPPER_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.DEEPSLATE_IRON_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.DEEPSLATE_GOLD_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.DEEPSLATE_LAPIS_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.DEEPSLATE_REDSTONE_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.DEEPSLATE_DIAMOND_ORE));
+        groundBlocks.add(new BlockRetriever(Blocks.DEEPSLATE_EMERALD_ORE));
+
         groundBlocks.add(new BlockRetriever(Blocks.SUSPICIOUS_GRAVEL));
         groundBlocks.add(new BlockRetriever(Blocks.SUSPICIOUS_SAND));
         invalidBlocks.add(new BlockRetriever(Blocks.WATER));
@@ -87,6 +122,7 @@ public class GameGenerator {
 
     public static void generate(ServerLevel level, BlockPos center){
         GameDataCache.clearAndSave();
+        center = center.atY(0);
         CTF.server.setDifficulty(Difficulty.PEACEFUL,true);
         for (Quadrant value : Quadrant.values()) {
             value.createAABB(center,borderRadius,level.getMaxY(),level.getMinY());
@@ -98,6 +134,10 @@ public class GameGenerator {
         setBorder(level,center);
         flags.generateForTeams(level,center);
         spawns.generateForTeams(level,center);
+        for (Crystal value : Crystal.values()) {
+            value.generate(level,center);
+        }
+        parkourGenerator.generate(new Random(),level,center);
         holyEnchanter.generate(level,center);
         if(bedrockWalls) {
             generateWalls(level, center);
@@ -205,7 +245,7 @@ public class GameGenerator {
             StructureTemplate template = level.getStructureManager().get(ResourceLocation.fromNamespaceAndPath("capturetheflag","holy_enchanter")).get();
             for (Quadrant quadrant : Quadrant.values()) {
                 for (int i = 0; i < numberPerQuadrant; i++) {
-                    generateAngularRandom(level,quadrant,template,worldCenter,minSquareDistanceFromCorner,20,minDistanceFromCenter,5, ProtectedRegion.Type.HOLY_ENCHANTER);
+                    generateAngularRandom(level,quadrant,template,worldCenter.atY(level.getMaxY()),minSquareDistanceFromCorner,20,minDistanceFromCenter,5, ProtectedRegion.Type.HOLY_ENCHANTER);
                 }
             }
         }
@@ -259,27 +299,36 @@ public class GameGenerator {
     }
 
 
-    public static @Nullable CannotGenerateException generateAngularRandom(ServerLevel level, Quadrant quadrant, StructureTemplate template, BlockPos worldCenter, int cornerDist, int borderEdge, int centerEdge, int attempts, @Nullable ProtectedRegion.Type type){
+    public static @Nullable BoundingBox generateAngularRandom(ServerLevel level, Quadrant quadrant, StructureTemplate template, BlockPos worldCenter, int cornerDist, int borderEdge, int centerEdge, int attempts, @Nullable ProtectedRegion.Type type){
         worldCenter = centralizeOnPoint(worldCenter, quadrant, template);
         BlockPos pos = quadrant.selectRandomPositionAngular(centerEdge,
                 borderRadius-borderEdge,
                 borderRadius-cornerDist,
                 worldCenter);
-        CannotGenerateException ex = null;
         for (int i = attempts; i > 0; i--) {
             try {
-                generateUnsafe(level, pos, quadrant, template,type);
-                return null;
-            } catch (CannotGenerateException e) {
-                ex=e;
-            }
+                return generateUnsafe(level, pos, quadrant, template, type);
+            } catch (CannotGenerateException e){}
         }
-        return ex;
+        return null;
+    }
+    public static @Nullable BoundingBox generateAngularRandomOffset(ServerLevel level, Quadrant quadrant, StructureTemplate template, BlockPos worldCenter, int cornerDist, int borderEdge, int centerEdge, int attempts, @Nullable ProtectedRegion.Type type, Function<BlockPos,BlockPos> offsetter){
+        worldCenter = centralizeOnPoint(worldCenter, quadrant, template);
+        BlockPos pos = quadrant.selectRandomPositionAngular(centerEdge,
+                borderRadius-borderEdge,
+                borderRadius-cornerDist,
+                worldCenter);
+        for (int i = attempts; i > 0; i--) {
+            try {
+                return generateUnsafeRandomRotate(level, pos, quadrant, template, type, offsetter);
+            } catch (CannotGenerateException e){}
+        }
+        return null;
     }
 
     public static @Nullable CannotGenerateException generateStatic(ServerLevel level, Quadrant quadrant, StructureTemplate template, BlockPos positivePosition, BlockPos worldCenter, @Nullable ProtectedRegion.Type type){
         BlockPos pos = centralizeOnPoint(positivePosition,quadrant,template);
-        pos = quadrant.transform(pos).offset(worldCenter.atY(0));
+        pos = quadrant.transform(pos).offset(worldCenter);
         try {
             generateUnsafe(level, pos, quadrant, template,type);
         } catch (CannotGenerateException e){
@@ -288,15 +337,56 @@ public class GameGenerator {
         return null;
     }
 
-    public static void generateUnsafe(ServerLevel level, BlockPos pos, Quadrant quadrant, StructureTemplate template, @Nullable ProtectedRegion.Type type){
+    public static BoundingBox generateUnsafe(ServerLevel level, BlockPos pos, Quadrant quadrant, StructureTemplate template, @Nullable ProtectedRegion.Type type){
         pos = findSafeGround(level,pos);
         StructurePlaceSettings settings = quadrant.makeStructurePlaceSettings();
         BoundingBox box = template.getBoundingBox(settings,pos);
         checkCollidesWithOtherStructure(box);
-        template.placeInWorld(level, pos, pos, settings,RANDOM,2);
         if(type != null) {
             GameDataCache.protect(box, type, TeamState.byQuadrant(quadrant));
         }
+        template.placeInWorld(level, pos, pos, settings,RANDOM,2);
+        return box;
+    }
+
+    public static BoundingBox generateUnsafe(ServerLevel level, BlockPos pos, Quadrant quadrant, StructureTemplate template, @Nullable ProtectedRegion.Type type, Function<BlockPos,BlockPos> offsetter){
+        pos = findSafeGround(level,pos);
+        pos = offsetter.apply(pos);
+        StructurePlaceSettings settings = quadrant.makeStructurePlaceSettings();
+        BoundingBox box = template.getBoundingBox(settings,pos);
+        checkCollidesWithOtherStructure(box);
+        if(type != null) {
+            GameDataCache.protect(box, type, TeamState.byQuadrant(quadrant));
+        }
+        template.placeInWorld(level, pos, pos, settings,RANDOM,2);
+        return box;
+    }
+
+    public static BoundingBox generateUnsafeRandomRotate(ServerLevel level, BlockPos pos, Quadrant quadrant, StructureTemplate template, @Nullable ProtectedRegion.Type type, Function<BlockPos,BlockPos> offsetter){
+        pos = findSafeGround(level,pos);
+        pos = offsetter.apply(pos);
+        StructurePlaceSettings settings = new StructurePlaceSettings();
+        settings.setRotation(Rotation.getRandom(RANDOM));
+        BoundingBox box = template.getBoundingBox(settings,pos);
+        checkCollidesWithOtherStructure(box);
+        if(type != null) {
+            GameDataCache.protect(box, type, TeamState.byQuadrant(quadrant));
+        }
+        template.placeInWorld(level, pos, pos, settings,RANDOM,2);
+        return box;
+    }
+
+    public static BoundingBox generateUnsafeRandomRotate(ServerLevel level, BlockPos pos, Quadrant quadrant, StructureTemplate template, @Nullable ProtectedRegion.Type type){
+        pos = findSafeGround(level,pos);
+        StructurePlaceSettings settings = new StructurePlaceSettings();
+        settings.setRotation(Rotation.getRandom(RANDOM));
+        BoundingBox box = template.getBoundingBox(settings,pos);
+        checkCollidesWithOtherStructure(box);
+        if(type != null) {
+            GameDataCache.protect(box, type, TeamState.byQuadrant(quadrant));
+        }
+        template.placeInWorld(level, pos, pos, settings,RANDOM,2);
+        return box;
     }
 
     private static BlockPos centralizeOnPoint(BlockPos pos, Quadrant quadrant, StructureTemplate template){
@@ -313,7 +403,6 @@ public class GameGenerator {
     }
 
     private static BlockPos findSafeGround(ServerLevel level, BlockPos pos){
-        pos = pos.atY(level.getMaxY());
         BlockState state = level.getBlockState(pos);
         while(!groundBlocks.contains(new BlockRetriever(state.getBlock()))){
             if(invalidBlocks.contains(new BlockRetriever(state.getBlock()))){

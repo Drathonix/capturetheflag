@@ -34,7 +34,7 @@ public class GamePhaseConfig {
         phases.add(GamePhase.of("preparation1")
                 .period(25*60)
                 .displayName("Preparation")
-                .flags(PhaseFlag.ONE_CLASS_SWAP,PhaseFlag.RESTRICTED,PhaseFlag.HOME,PhaseFlag.IN_PLAY));
+                .flags(PhaseFlag.RESTRICTED,PhaseFlag.HOME,PhaseFlag.IN_PLAY));
         phases.add(GamePhase.of("combat1")
                 .period(15*60)
                 .displayName("Combat")
@@ -42,7 +42,7 @@ public class GamePhaseConfig {
         phases.add(GamePhase.of("preparation2")
                 .period(20*60)
                 .displayName("Recovery")
-                .flags(PhaseFlag.ONE_CLASS_SWAP,PhaseFlag.RESTRICTED,PhaseFlag.HOME,PhaseFlag.IN_PLAY));
+                .flags(PhaseFlag.RESTRICTED,PhaseFlag.HOME,PhaseFlag.IN_PLAY));
         phases.add(GamePhase.of("combat2")
                 .period(-1)
                 .displayName("Combat")

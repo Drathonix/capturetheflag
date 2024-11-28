@@ -11,5 +11,6 @@ public class Configs {
         GameGenerator.init();
         ItemsConfig.init();
         GamePhaseConfig.init();
+        SkillsConfig.init();
     }
 }

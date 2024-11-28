@@ -133,11 +133,8 @@ public class GamePhase {
         else{
             GeneralUtil.sendToAllPlayers(Component.literal("You can now enter enemy territory! Capture the flag!").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD));
         }
-        if(flags.contains(PhaseFlag.ONE_CLASS_SWAP) || flags.contains(PhaseFlag.INFINITE_CLASS_SWAP)) {
-            GeneralUtil.sendToAllPlayers(Component.literal("You can switch your class once during this phase (/class)").withStyle(ChatFormatting.GOLD));
-            for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
-                CTFPlayerData.get(player).allowChangeClass=true;
-            }
+        if(flags.contains(PhaseFlag.INFINITE_CLASS_SWAP)) {
+            GeneralUtil.sendToAllPlayers(Component.literal("You can switch your class and skills during this phase (/class)").withStyle(ChatFormatting.GOLD));
         }
         if(flags.contains(PhaseFlag.TIME_LOSS)) {
             GeneralUtil.sendToAllPlayers(Component.literal("Capturing the flag during this phase will reduce the stage time by 5 minutes!").withStyle(ChatFormatting.GOLD));

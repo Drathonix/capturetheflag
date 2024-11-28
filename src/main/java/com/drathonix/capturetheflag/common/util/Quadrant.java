@@ -149,4 +149,10 @@ public enum Quadrant {
     public BoundingBox castedBoundingBox() {
         return new BoundingBox((int)boundingBox.minX,(int)boundingBox.minY,(int)boundingBox.minZ,(int)boundingBox.maxX,(int)boundingBox.maxY,(int)boundingBox.maxZ);
     }
+
+    public BlockPos selectRandomPosition(int min, int max, BlockPos center) {
+        int x=random.nextInt(min,max);
+        int z=random.nextInt(min,max);
+        return transform(new BlockPos(x,0,z)).offset(center);
+    }
 }

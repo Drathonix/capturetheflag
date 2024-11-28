@@ -48,8 +48,8 @@ public class CTF {
     public static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     public static MinecraftServer server;
 
+
     public static void init() {
-        Persist.doC_NAMEScan();
         Stringify.register(ResourceLocation.class, CTF::safeRL,CTF::safeRL);
         Stringify.register(Component.class,CTF::parseComponent, CTF::componentJsonify);
         Stringify.register(MutableComponent.class,CTF::parseComponent, CTF::componentJsonify);
@@ -64,20 +64,9 @@ public class CTF {
     }
 
     public static void postServerInitted(){
+        //Persist.doC_NAMEScan();
         Configs.reload();
         executor.scheduleAtFixedRate(GameDataCache::save,60,60, TimeUnit.SECONDS);
-        /*TickEvent.ServerLevelTick.SERVER_POST.register(server->{
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                CTFPlayerData data = CTFPlayerData.get(player);
-                data.requireClassType(type->{
-                    data.requireTeam(team->{
-                        if(team.getTerritory().intersects(player.getBoundingBox())){
-                            player.
-                        }
-                    });
-                });
-            }
-        });*/
     }
 
     public static String safeRL(ResourceLocation rl){

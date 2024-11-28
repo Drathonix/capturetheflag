@@ -27,30 +27,30 @@ public abstract class MixinAbstractFurnaceBlockEntity implements IMixinAbstractF
     @Nullable
     private UUID ctf$owner = null;
 
-    @Inject(method = "saveAdditional",at = @At("RETURN"))
+   /* @Inject(method = "saveAdditional",at = @At("RETURN"))
     public void customDataSave(CompoundTag compoundTag, HolderLookup.Provider provider, CallbackInfo ci){
         if(ctf$owner != null) {
-            compoundTag.putUUID("ctf_owner", ctf$owner);
-        }
+       //     compoundTag.putUUID("ctf_owner", ctf$owner);
+        //}
     }
     @Inject(method = "loadAdditional",at = @At("RETURN"))
     public void customDataLoad(CompoundTag compoundTag, HolderLookup.Provider provider, CallbackInfo ci) {
-        if(compoundTag.contains("ctf_owner")){
-            ctf$owner = compoundTag.getUUID("ctf_owner");
-        }
+       // if(compoundTag.contains("ctf_owner")){
+       //     ctf$owner = compoundTag.getUUID("ctf_owner");
+       // }
     }
 
     @Inject(method = "<init>",at = @At("RETURN"))
     public void customDataInit(BlockEntityType blockEntityType, BlockPos blockPos, BlockState blockState, RecipeType recipeType, CallbackInfo ci){
-        ctf$owner = IMixinAbstractFurnaceBlockEntity.ref.get(blockPos.asLong());
-    }
+        //ctf$owner = IMixinAbstractFurnaceBlockEntity.ref.get(blockPos.asLong());
+    }*/
 
 
     @Inject(method = "getTotalCookTime",at = @At("RETURN"), cancellable = true)
     private static void minerBoost(ServerLevel serverLevel, AbstractFurnaceBlockEntity abstractFurnaceBlockEntity, CallbackInfoReturnable<Integer> cir){
-        if(abstractFurnaceBlockEntity instanceof IMixinAbstractFurnaceBlockEntity mixin && mixin.ctf$getOwner() != null) {
+        //if(abstractFurnaceBlockEntity instanceof IMixinAbstractFurnaceBlockEntity mixin && mixin.ctf$getOwner() != null) {
             cir.setReturnValue(cir.getReturnValueI() / 3);
-        }
+       // }
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.drathonix.capturetheflag.common.system;
 
 import com.drathonix.capturetheflag.common.CTF;
 import com.drathonix.capturetheflag.common.ClassType;
-import com.drathonix.capturetheflag.common.bridge.IMixinAbstractFurnaceBlockEntity;
 import com.drathonix.capturetheflag.common.component.CustomDatas;
 import com.drathonix.capturetheflag.common.config.CTFConfig;
 import com.drathonix.capturetheflag.common.config.ItemsConfig;
@@ -37,8 +36,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -50,9 +49,9 @@ public class CTFEventHandler {
         EntityEvent.LIVING_DEATH.register(CTFEventHandler::onLivingDeath);
         EntityEvent.LIVING_HURT.register(CTFEventHandler::onLivingHurt);
         PlayerEvent.PLAYER_CLONE.register(CTFEventHandler::onPlayerClone);
-        PlayerEvent.DROP_ITEM.register(CTFEventHandler::onPlayerDrop);
         PlayerEvent.PICKUP_ITEM_PRE.register(CTFEventHandler::onPlayerPickup);
         PlayerEvent.PLAYER_JOIN.register(CTFEventHandler::onJoin);
+        InteractionEvent.RIGHT_CLICK_ITEM.register(CTFEventHandler::onRightClick);
         BlockEvent.PLACE.register(CTFEventHandler::onBlockPlace);
         BlockEvent.BREAK.register(CTFEventHandler::onBlockBreak);
         InteractionEvent.RIGHT_CLICK_BLOCK.register(CTFEventHandler::onClickBlock);
@@ -80,8 +79,11 @@ public class CTFEventHandler {
                 if(stack.getItem() == Items.LAPIS_BLOCK){
                     lapis = stack.getCount()*9;
                 }
+                if(stack.getItem() == Items.SADDLE){
+                    lapis = stack.getCount()*32;
+                }
                 if(stack.getItem() == Items.ENDER_PEARL){
-                    lapis = stack.getCount()*64;
+                    lapis = stack.getCount()*32;
                 }
                 if(lapis > 0) {
 
@@ -98,13 +100,6 @@ public class CTFEventHandler {
             }
         }
         return EventResult.pass();
-    }
-
-    private static EventResult onPlayerDrop(Player player, ItemEntity itemEntity) {
-        if(CustomDatas.getSoulBound(itemEntity.getItem()) != -1){
-            return EventResult.interruptFalse();
-        }
-        return EventResult.interruptTrue();
     }
 
     private static EventResult onLivingHurt(LivingEntity livingEntity, DamageSource source, float v) {
@@ -129,7 +124,21 @@ public class CTFEventHandler {
 
     private synchronized static InteractionResult onClickBlock(Player player, InteractionHand interactionHand, BlockPos pos, Direction direction) {
         if(player instanceof ServerPlayer sp) {
+            for (Skill skill : CTFPlayerData.get(sp).getSkills()) {
+                skill.onClickBlock(sp,sp.serverLevel(),pos,direction);
+            }
             return GameDataCache.viewProtectedRegionsAt(pos, region -> region.type.allowBlockInteract(sp.serverLevel(),pos,region,sp) ? null : InteractionResult.FAIL, () -> InteractionResult.PASS);
+        }
+        return InteractionResult.PASS;
+    }
+
+    private static InteractionResult onRightClick(Player player, InteractionHand interactionHand) {
+        if(interactionHand == InteractionHand.MAIN_HAND && player instanceof ServerPlayer sp){
+            ItemStack stack = sp.getItemInHand(interactionHand);
+            CustomItem item = CustomDatas.getCustomItem(stack);
+            if(item != CustomItem.NONE){
+                item.onClick(sp,interactionHand);
+            }
         }
         return InteractionResult.PASS;
     }
@@ -153,7 +162,8 @@ public class CTFEventHandler {
                     CustomDatas.setCustomItemType(stack, CustomItem.NONE);
                     for (BlockPos blockPos : DirectionUtil.adjacents(Direction.orderedByNearest(sp)[0]).translated(pos)) {
                         if (GameDataCache.viewProtectedRegionsAt(pos,region->region.type.allowBlockBreak(sl,blockPos,region,sp) ? null : false,()->true)
-                                && !level.getBlockState(blockPos).getTags().filter(tag -> tag == BlockTags.MINEABLE_WITH_PICKAXE).toList().isEmpty()) {
+                                && !level.getBlockState(blockPos).getTags().filter(tag -> tag == BlockTags.MINEABLE_WITH_PICKAXE).toList().isEmpty() &&
+                        level.getBlockState(blockPos).getBlock() != Blocks.NETHER_BRICKS) {
                             sp.gameMode.destroyBlock(blockPos);
                         }
                     }
@@ -170,13 +180,13 @@ public class CTFEventHandler {
             if(GameDataCache.viewProtectedRegionsAt(pos, region -> region.type.allowBlockPlace(sp.serverLevel(),pos,region,sp) ? null : true,()->false)){
                 return EventResult.interruptFalse();
             }
-            if (state.getBlock() instanceof AbstractFurnaceBlock) {
+            /*if (state.getBlock() instanceof AbstractFurnaceBlock) {
                 CTFPlayerData.get(sp).requireClassType(type -> {
                     if (type.abilities.contains(SpecialAbility.SMELTLER)) {
-                        IMixinAbstractFurnaceBlockEntity.ref.put(pos.asLong(), sp.getUUID());
+                       // IMixinAbstractFurnaceBlockEntity.ref.put(pos.asLong(), sp.getUUID());
                     }
                 });
-            }
+            }*/
             if (CustomItem.BRICKLAYER.is(sp.getOffhandItem())) {
                 Direction dir = orderedByNearestSpecial(sp)[0].getOpposite();
                 BlockPos pk = pos.relative(dir);
@@ -185,12 +195,11 @@ public class CTFEventHandler {
                 CTFPlayerData.get(sp).requireClassType(type -> {
                     int k = type == ClassType.ARCHITECT ? ItemsConfig.brickLayerPlacementBuilder : ItemsConfig.brickLayerPlacement;
                     BlockPos ps = pk;
-                    while (level.getEntitiesOfClass(LivingEntity.class,new AABB(ps).inflate(0.25D)).isEmpty() && !mainHand.isEmpty() && k > 0 && level.isInWorldBounds(ps) && !isPast(placer.blockPosition(),pk,dir)) {
+                    while (level.getEntitiesOfClass(LivingEntity.class,new AABB(ps)).isEmpty() && !mainHand.isEmpty() && k > 0 && level.isInWorldBounds(ps) && !isPast(placer.blockPosition(),pk,dir)) {
                         try {
                             BlockPos finalPs = ps;
-                            if (GameDataCache.viewProtectedRegionsAt(pos, region->region.type.allowBlockPlace(sp.serverLevel(), finalPs,region,sp) ? null : false,()->true) && level.getBlockState(ps).canBeReplaced()) {
+                            if (GameDataCache.viewProtectedRegionsAt(finalPs, region->region.type.allowBlockPlace(sp.serverLevel(), finalPs,region,sp) ? null : false,()->true) && level.getBlockState(ps).canBeReplaced()) {
                                 level.setBlockAndUpdate(ps, block.getStateForPlacement(new BlockPlaceContext(sp, InteractionHand.MAIN_HAND, mainHand, BlockHitResult.miss(new Vec3(ps), dir.getOpposite(), ps))));
-
                             }
                         } catch (Throwable t) {
                             t.printStackTrace();
@@ -244,11 +253,9 @@ public class CTFEventHandler {
     private synchronized static EventResult onLivingDeath(LivingEntity livingEntity, DamageSource source) {
         if (source.getEntity() instanceof ServerPlayer sp) {
             CTFPlayerData data = CTFPlayerData.get(sp);
-            data.requireClassType(type -> {
-                for (SpecialAbility ability : type.abilities) {
-                    ability.onKill(sp);
-                }
-            });
+            for (Skill skill : data.getSkills()) {
+                skill.onKill(sp);
+            }
         }
         if(livingEntity instanceof ServerPlayer sp){
             CTFPlayerData data = CTFPlayerData.get(sp);

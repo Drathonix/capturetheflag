@@ -303,8 +303,12 @@ public class HolyEnchanter extends ChestGUIMenu {
                     }
                     int pwr = pair.getFirst();
                     current.enchant(holder, pwr);
-                    CustomDatas.setVanish(current, false);
                 }
+            }
+            CustomDatas.setVanish(current, false);
+            if(CustomDatas.getSoulBound(current) == -1){
+                CustomDatas.setLesserSoulBound(current,1);
+                current.set(DataComponents.LORE,CustomDatas.addSoulBoundLore(ItemLore.EMPTY,1));
             }
             sp.setExperienceLevels(sp.experienceLevel-costToEnchantLevels);
             data.getTeamState().removeLapis(costToEnchantLapis);

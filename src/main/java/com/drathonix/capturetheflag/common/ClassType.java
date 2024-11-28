@@ -1,8 +1,5 @@
 package com.drathonix.capturetheflag.common;
 
-import com.drathonix.capturetheflag.common.system.SpecialAbility;
-import com.drathonix.capturetheflag.common.util.ToolTier;
-import com.drathonix.capturetheflag.common.util.ToolType;
 import com.drathonix.capturetheflag.common.util.regis.EnchantmentRetriever;
 import com.drathonix.capturetheflag.common.util.regis.ItemStackRetriever;
 import com.drathonix.capturetheflag.common.util.regis.MobEffectRetriever;
@@ -35,8 +32,6 @@ public enum ClassType {
             respawnGear.add(new ItemStackRetriever(new ItemStack(Items.STONE_SWORD),true));
             respawnGear.add(new ItemStackRetriever(new ItemStack(Items.STONE_AXE),true));
 
-            abilities.add(SpecialAbility.SMELTLER);
-            passiveEffects.put(retriever(MobEffects.DIG_SPEED),1);
             territorialEffects.put(retriever(MobEffects.DIG_SPEED),2);
             enchantments.put(location(Enchantments.FORTUNE), 3);
             enchantments.put(location(Enchantments.EFFICIENCY), 5);
@@ -59,7 +54,6 @@ public enum ClassType {
             respawnGear.add(new ItemStackRetriever(new ItemStack(Items.IRON_AXE),true));
             respawnGear.add(new ItemStackRetriever(new ItemStack(Items.IRON_SHOVEL),true));
 
-            abilities.add(SpecialAbility.COBBLER);
             territorialEffects.put(retriever(MobEffects.REGENERATION),1);
             enchantments.put(location(Enchantments.INFINITY), 1);
             enchantments.put(location(Enchantments.KNOCKBACK), 2);
@@ -84,7 +78,6 @@ public enum ClassType {
             respawnGear.add(new ItemStackRetriever(new ItemStack(Items.IRON_SWORD),true));
             respawnGear.add(new ItemStackRetriever(new ItemStack(Items.STONE_AXE),true));
 
-            abilities.add(SpecialAbility.BLOODLUST);
             passiveEffects.put(retriever(MobEffects.HEALTH_BOOST),1);
             enchantments.put(location(Enchantments.SHARPNESS),3);
             enchantments.put(location(Enchantments.THORNS),1);
@@ -106,7 +99,6 @@ public enum ClassType {
             respawnGear.add(new ItemStackRetriever(new ItemStack(Items.BOW),true));
             respawnGear.add(new ItemStackRetriever(new ItemStack(Items.ARROW,8)));
 
-            abilities.add(SpecialAbility.SCROUNGER);
             enchantments.put(location(Enchantments.FLAME),1);
             enchantments.put(location(Enchantments.CHANNELING), 1);
             enchantments.put(location(Enchantments.QUICK_CHARGE), 2);
@@ -114,7 +106,6 @@ public enum ClassType {
             enchantments.put(location(Enchantments.PUNCH), 2);
             enchantments.put(location(Enchantments.PIERCING), 4);
             enchantments.put(location(Enchantments.POWER), 3);
-            arrowDamageMultiplier=1.10F;
 
             recipes.add(ResourceLocation.fromNamespaceAndPath("minecraft","crossbow"));
             recipes.add(ResourceLocation.fromNamespaceAndPath(CTF.modid,"trident"));
@@ -150,10 +141,6 @@ public enum ClassType {
     @Save(description = "Items to respawn with")
     @Typing(ItemStackRetriever.class)
     public List<ItemStackRetriever> respawnGear = new ArrayList<>();
-
-    @Save(description = "The special passive abilities this class has.")
-    @Typing(SpecialAbility.class)
-    public Set<SpecialAbility> abilities = new HashSet<>();
 
     @Save(description = "Special recipes only this class has access to.")
     @Typing(ResourceLocation.class)

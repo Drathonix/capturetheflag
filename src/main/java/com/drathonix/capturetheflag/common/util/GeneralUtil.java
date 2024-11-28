@@ -1,11 +1,17 @@
 package com.drathonix.capturetheflag.common.util;
 
 import com.drathonix.capturetheflag.common.CTF;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +19,7 @@ import java.util.List;
 
 public class GeneralUtil {
     public static String convertSeconds(long tseconds) {
+
         int m2s = 60;
         int h2m2s = 60*m2s;
         int d2h2m2s = 24*h2m2s;
@@ -55,5 +62,17 @@ public class GeneralUtil {
             out.add(copy.remove((int)(Math.random()*copy.size())));
         }
         return out;
+    }
+
+    public static AABB convertToAABB(BoundingBox aabb) {
+        return new AABB(aabb.minX(),aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
+    }
+
+    public static void displayInActionBar(MutableComponent component, ServerPlayer player) {
+        player.connection.send(new ClientboundSetActionBarTextPacket(component));
+    }
+
+    public static void playSound(ServerPlayer serverPlayer, Holder.Reference<SoundEvent> event) {
+        serverPlayer.playNotifySound(event.value(),SoundSource.MASTER,1f,1f);
     }
 }

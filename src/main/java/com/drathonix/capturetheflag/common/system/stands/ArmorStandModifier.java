@@ -12,4 +12,16 @@ public interface ArmorStandModifier {
     default void viewProtectedRegions(ArmorStand stand, Consumer<ProtectedRegion> consumer){
         GameDataCache.viewProtectedRegionsAt(stand.blockPosition(),consumer);
     }
+
+    ArmorStandModifier NOTHING = new ArmorStandModifier() {
+        @Override
+        public void onTick(ArmorStand stand, String marker) {
+
+        }
+
+        @Override
+        public void onLoad(ArmorStand stand, String marker) {
+
+        }
+    };
 }

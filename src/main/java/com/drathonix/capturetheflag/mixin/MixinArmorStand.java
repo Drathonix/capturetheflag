@@ -22,13 +22,19 @@ public abstract class MixinArmorStand extends MixinLivingEntity implements IMixi
     @Unique
     public Vec3 ctf$startPosition = null;
 
+    @Unique
+    private static boolean performArmorStandOverwrite = true;
+
+    @Unique
+    private int ctf$ticks = 0;
+
     @Inject(method = "readAdditionalSaveData",at = @At("RETURN"))
     public void markSpecial(CompoundTag compoundTag, CallbackInfo ci){
-        if(compoundTag.contains("CustomName")){
+        if(performArmorStandOverwrite && compoundTag.contains("CustomName")){
             String name = getCustomName().getString();
             if(name.startsWith("[") && name.endsWith("]")){
-                ctf$marker = name.substring(1, name.length()-1);
-                ArmorStandMarkers.add((ArmorStand)(Object)this,ctf$marker);
+               ctf$marker = name.substring(1, name.length()-1);
+               ArmorStandMarkers.add((ArmorStand)(Object)this,ctf$marker);
             }
         }
         if(ctf$isSpecial()){
@@ -79,6 +85,21 @@ public abstract class MixinArmorStand extends MixinLivingEntity implements IMixi
         if(ctf$isSpecial()){
             cir.setReturnValue(true);
         }
+    }
+
+    @Override
+    public String ctf$getMarker() {
+        return ctf$marker;
+    }
+
+    @Override
+    public int ctf$getTicks() {
+        return ctf$ticks;
+    }
+
+    @Override
+    public void ctf$setTicks(int val) {
+        this.ctf$ticks=val;
     }
 
     @Override

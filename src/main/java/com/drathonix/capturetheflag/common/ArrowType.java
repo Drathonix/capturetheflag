@@ -32,7 +32,6 @@ public enum ArrowType {
 
     public ItemStack createStack() {
         ItemStack stack = new ItemStack(type);
-       // CustomDatas.setClass(stack,ClassType.RANGER);
         if(type == Items.ARROW){
             return stack;
         }

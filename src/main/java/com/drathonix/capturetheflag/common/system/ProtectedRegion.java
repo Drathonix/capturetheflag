@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,11 +73,22 @@ public class ProtectedRegion {
             }
 
             @Override
+            public boolean allowBlockExplode(BlockGetter blockGetter, BlockPos blockPos) {
+                return true;
+            }
+
+            @Override
             public boolean blockStructures() {
                 return false;
             }
         },
         HOLY_ENCHANTER{
+            @Override
+            public boolean allowBlockInteract(ServerLevel level, BlockPos pos, ProtectedRegion region, ServerPlayer player) {
+                return true;
+            }
+        },
+        PARKOUR_ZONE{
             @Override
             public boolean allowBlockInteract(ServerLevel level, BlockPos pos, ProtectedRegion region, ServerPlayer player) {
                 return true;
@@ -147,6 +159,10 @@ public class ProtectedRegion {
 
         public boolean blockStructures() {
             return true;
+        }
+
+        public boolean allowBlockExplode(BlockGetter blockGetter, BlockPos blockPos) {
+            return false;
         }
     }
 

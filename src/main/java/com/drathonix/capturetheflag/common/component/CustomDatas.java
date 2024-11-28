@@ -2,11 +2,16 @@ package com.drathonix.capturetheflag.common.component;
 
 import com.drathonix.capturetheflag.common.ClassType;
 import com.drathonix.capturetheflag.common.system.CustomItem;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemLore;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -88,6 +93,14 @@ public class CustomDatas {
         require(holder, c -> c.putInt("ctf_soul_bound", value));
     }
 
+    public static int getLesserSoulBound(@NotNull DataComponentHolder holder){
+        return getDefaulted(holder,tag->tag.contains("ctf_lesser_soul_bound") ? tag.getInt("ctf_lesser_soul_bound") : -1,()->-1);
+    }
+
+    public static void setLesserSoulBound(@NotNull DataComponentHolder holder, int value){
+        require(holder, c -> c.putInt("ctf_lesser_soul_bound", value));
+    }
+
     public static @NotNull ClassType getClass(@NotNull DataComponentHolder holder){
         return getDefaulted(holder,
                 tag->tag.contains("ctf_class") ? (ClassType)ClassType.valueOf(ClassType.class,tag.getString("ctf_class")) : ClassType.NONE,
@@ -102,5 +115,29 @@ public class CustomDatas {
         return getDefaulted(holder,
                 tag->tag.contains("ctf_custom_item") ? CustomItem.valueOf(CustomItem.class,tag.getString("ctf_custom_item")) : CustomItem.NONE,
                 ()->CustomItem.NONE);
+    }
+
+    public static ItemLore addSoulBoundLore(ItemLore lore) {
+        return addSoulBoundLore(lore,3);
+    }
+
+    public static ItemLore addSoulBoundLore(ItemLore lore, int level) {
+        return lore.withLineAdded(Component.literal("Soulbound " + level)
+                        .withStyle(Style.EMPTY
+                        .withItalic(false)
+                        .withColor(ChatFormatting.LIGHT_PURPLE)
+                        .withBold(true)));
+    }
+
+    public static void setLocked(ItemStack holder, boolean value) {
+        if(value) {
+            require(holder, c -> c.putBoolean("ctf_locked", true));
+        }
+        else{
+            require(holder, c -> c.remove("ctf_locked"));
+        }
+    }
+    public static boolean getLocked(@NotNull DataComponentHolder holder){
+        return getDefaulted(holder,tag->tag.contains("ctf_locked"),()->false);
     }
 }
