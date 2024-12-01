@@ -30,6 +30,7 @@
     "MixinProjectileWeaponItem",
     "MixinServerExplosion",
     "MixinServerPlayer",
+    "MixinStructureTemplate",
     "MixinThrownTrident"
   ],
   "client": [

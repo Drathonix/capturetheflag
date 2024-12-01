@@ -22,6 +22,7 @@ public class BeaconStand implements ArmorStandModifier{
     public void onLoad(ArmorStand stand, String marker) {
         BlockPos pos = stand.blockPosition();
         Level level = stand.level();
+        boolean past = false;
         while(pos.getY() <= level.getMaxY()){
             level.setBlock(pos, Blocks.AIR.defaultBlockState(),0);
             pos = pos.offset(0,1,0);

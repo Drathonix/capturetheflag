@@ -15,13 +15,15 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class CTFPlayerData {
-    private Set<Skill> skills = new HashSet<>();
+    private final Set<Skill> skills = new HashSet<>();
     private int maxSkills = 2;
     private TeamState teamState;
     private ClassType classType;
     private boolean hasFlag;
     public long homeCooldownEnd = 0;
+    //Not saved.
     public long safetyCooldownEnd = -1;
+    //Not saved.
     private boolean hasParkourBundle = false;
 
     public CTFPlayerData(){
@@ -55,6 +57,7 @@ public class CTFPlayerData {
         tag.putBoolean("hasflag", hasFlag);
         tag.putBoolean("hasparkourbundle", hasParkourBundle);
         tag.putInt("maxskills", maxSkills);
+        tag.putLong("homecooldown", homeCooldownEnd);
         int[] skills = new int[this.skills.size()];
         int i = 0;
         for (Skill skill : this.skills) {
@@ -80,6 +83,9 @@ public class CTFPlayerData {
         }
         if(tag.contains("maxskills")) {
             maxSkills = tag.getInt("maxskills");
+        }
+        if(tag.contains("homecooldown")){
+            homeCooldownEnd = tag.getLong("homecooldown");
         }
         if(tag.contains("skills")){
             skills.clear();
@@ -161,5 +167,10 @@ public class CTFPlayerData {
         while(maxSkills > skills.size() && !otherSkills.isEmpty()){
             skills.add(otherSkills.remove((int)(Math.random()*otherSkills.size())));
         }
+    }
+
+    public void onRespawn() {
+        hasParkourBundle=false;
+        safetyCooldownEnd=-1;
     }
 }

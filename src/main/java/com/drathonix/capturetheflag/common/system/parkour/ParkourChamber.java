@@ -7,7 +7,6 @@ import com.drathonix.capturetheflag.common.system.CustomItem;
 import com.drathonix.capturetheflag.common.system.TeamState;
 import com.vicious.persist.annotations.Save;
 import com.vicious.persist.annotations.Typing;
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -15,13 +14,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.material.LavaFluid;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.scores.Team;
 
 import java.util.*;
 
@@ -40,10 +36,10 @@ public class ParkourChamber {
     public AABB parkourBoundingBox;
     @Save
     @Typing(Boolean.class)
-    private List<Boolean> completedByTeams = new ArrayList<>(List.of(false,false));
+    protected List<Boolean> completedByTeams = new ArrayList<>(List.of(false,false));
 
-    private Map<UUID,Long> timeouts = new HashMap<>();
-    private Map<UUID,Integer> attempts = new HashMap<>();
+    protected Map<UUID,Long> timeouts = new HashMap<>();
+    protected Map<UUID,Integer> attempts = new HashMap<>();
 
     public ParkourChamber(){
 
@@ -59,8 +55,14 @@ public class ParkourChamber {
     }
 
     public void tick(ServerLevel level){
-        level.getEntitiesOfClass(ServerPlayer.class, parkourBoundingBox).forEach(sp -> {
+        for (ServerPlayer sp : level.getEntitiesOfClass(ServerPlayer.class, parkourBoundingBox)) {
             CTFPlayerData data = CTFPlayerData.get(sp);
+            if(startAABB.intersects(sp.getBoundingBox())){
+                if(data.hasParkourBundle()){
+                    unlockBundle(sp);
+                }
+                return;
+            }
             if(sp.isInLava()){
                 incrementAttemptsAndTeleportToStart(sp);
                 int atmps = difficulty.attemptsPerMinute-attempts.getOrDefault(sp.getUUID(),0);
@@ -75,40 +77,37 @@ public class ParkourChamber {
                     sp.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER,1f,1f);
                     attempts.put(sp.getUUID(), 0);
                 }
-                return;
-            }
-            if(startAABB.intersects(sp.getBoundingBox())){
-                if(data.hasParkourBundle()){
-                    unlockBundle(sp);
-                }
-                return;
+                continue;
             }
             if(data.getTeamState() != null && completedByTeams.get(data.getTeamState().ordinal())){
                 sp.sendSystemMessage(Component.literal("Your team has already completed this parkour.").withStyle(ChatFormatting.RED));
                 sp.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER,1f,1f);
                 sendToStart(sp);
-                return;
+                continue;
             }
             if(onTimeout(sp)){
                 sp.sendSystemMessage(Component.literal("You can't attempt this parkour for " + ((timeouts.get(sp.getUUID())-System.currentTimeMillis())/1000) + " seconds.").withStyle(ChatFormatting.RED));
                 sp.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER,1f,1f);
                 sendToStart(sp);
-                return;
             }
-        });
+        }
         level.getEntitiesOfClass(ServerPlayer.class, crateAABB).forEach(sp -> {
             CTFPlayerData data = CTFPlayerData.get(sp);
             if(!data.hasParkourBundle()){
-                if(sp.getInventory().add(difficulty.generateRewardBundle())) {
-                    data.setHasParkourBundle(true);
-                    sp.sendSystemMessage(Component.literal("You have obtained a reward bundle. Make it back to the start to unlock it").withStyle(ChatFormatting.GREEN));
-                    sp.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER,1f,1f);
-                }
+                grantBundle(sp,data);
             }
         });
     }
 
-    private void unlockBundle(ServerPlayer player) {
+    protected void grantBundle(ServerPlayer sp, CTFPlayerData data){
+        if(sp.getInventory().add(difficulty.generateRewardBundle())) {
+            data.setHasParkourBundle(true);
+            sp.sendSystemMessage(Component.literal("You have obtained a reward bundle. Make it back to the start to unlock it").withStyle(ChatFormatting.GREEN));
+            sp.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER,1f,1f);
+        }
+    }
+
+    protected void unlockBundle(ServerPlayer player) {
         Inventory inventory = player.getInventory();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack stack = inventory.getItem(i);
@@ -119,12 +118,20 @@ public class ParkourChamber {
                 }
                 CustomDatas.setLocked(stack,false);
                 inventory.setItem(i,stack);
-                player.sendSystemMessage(Component.literal("Congratulations on completing the " + difficulty.saveName() + " parkour! Your reward bundle has been unlocked!").withStyle(ChatFormatting.GREEN).withStyle(ChatFormatting.BOLD));
-                player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER,1f,1f);
-                CTFPlayerData.get(player).setHasParkourBundle(false);
+                onWin(player);
                 return;
             }
         }
+    }
+
+    protected void onWin(ServerPlayer player){
+        player.sendSystemMessage(Component.literal("Congratulations on completing the " + difficulty.saveName() + " parkour! Your reward bundle has been unlocked!").withStyle(ChatFormatting.GREEN).withStyle(ChatFormatting.BOLD));
+        player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER,1f,1f);
+        CTFPlayerData.get(player).setHasParkourBundle(false);
+        onBeatenBy(player);
+    }
+
+    protected void onBeatenBy(ServerPlayer player){
         for (ServerPlayer other : player.serverLevel().getEntitiesOfClass(ServerPlayer.class, parkourBoundingBox)) {
             if(other != player){
                 removeBundle(other);
@@ -134,28 +141,28 @@ public class ParkourChamber {
         }
     }
 
-    private boolean onTimeout(ServerPlayer player){
+    protected boolean onTimeout(ServerPlayer player){
         if(timeouts.containsKey(player.getUUID())){
             return System.currentTimeMillis() < timeouts.get(player.getUUID());
         }
         return false;
     }
 
-    private void sendToStart(ServerPlayer player){
+    protected void sendToStart(ServerPlayer player){
         Vec3 dest = start.getCenter();
         player.teleportTo(dest.x,dest.y,dest.z);
         player.setRemainingFireTicks(0);
     }
 
-    private void putOnTimeout(ServerPlayer player){
+    protected void putOnTimeout(ServerPlayer player){
         timeouts.put(player.getUUID(), System.currentTimeMillis()+getTimeout());
     }
 
-    private long getTimeout(){
+    protected long getTimeout(){
         return CTFConfig.parkourTimeout*1000;
     }
 
-    private void incrementAttemptsAndTeleportToStart(ServerPlayer player){
+    protected void incrementAttemptsAndTeleportToStart(ServerPlayer player){
         attempts.put(player.getUUID(),attempts.getOrDefault(player.getUUID(),0)+1);
         if(attempts.get(player.getUUID()) >= difficulty.attemptsPerMinute){
             putOnTimeout(player);
@@ -164,7 +171,7 @@ public class ParkourChamber {
         sendToStart(player);
     }
 
-    private void removeBundle(ServerPlayer player) {
+    protected void removeBundle(ServerPlayer player) {
         CTFPlayerData data = CTFPlayerData.get(player);
         if(data.hasParkourBundle()){
             data.setHasParkourBundle(false);

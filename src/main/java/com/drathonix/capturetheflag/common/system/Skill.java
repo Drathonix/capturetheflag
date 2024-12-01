@@ -38,6 +38,7 @@ public enum Skill {
             ItemStack out = new ItemStack(Items.SNIFFER_EGG);
             out.set(DataComponents.ITEM_NAME, Component.literal("Sniffer's Blessing").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GREEN));
             ItemLore lore = ItemLore.EMPTY;
+            lore = lore.withLineAdded(Component.literal("[Breaker Skill]").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.GREEN)));
             lore = lore.withLineAdded(Component.literal("Clicking a block with a pickaxe will detect ores or air.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Has a range of 5 blocks.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Only reports the first block detected.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
@@ -109,6 +110,7 @@ public enum Skill {
             ItemStack out = new ItemStack(Items.EMERALD);
             out.set(DataComponents.ITEM_NAME, Component.literal("Fortunate").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.LIGHT_PURPLE));
             ItemLore lore = ItemLore.EMPTY;
+            lore = lore.withLineAdded(Component.literal("[Breaker Skill]").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.GREEN)));
             lore = lore.withLineAdded(Component.literal("Tool fortune level is occasionally increased by 1.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("This has no effect above y64 and gets stronger deeper underground.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Chance maxes out below y-20 at 50%.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
@@ -154,6 +156,7 @@ public enum Skill {
             ItemStack out = new ItemStack(Items.COBBLESTONE);
             out.set(DataComponents.ITEM_NAME, Component.literal("Cobbler").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.BLUE));
             ItemLore lore = ItemLore.EMPTY;
+            lore = lore.withLineAdded(Component.literal("[Architect Skill]").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.GREEN)));
             lore = lore.withLineAdded(Component.literal("Generates 1 cobblestone constantly.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Maxes out at 128 stacks in the inventory.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Architects produce 2 times faster.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
@@ -167,9 +170,11 @@ public enum Skill {
             ItemStack out = new ItemStack(Items.NETHER_BRICKS);
             out.set(DataComponents.ITEM_NAME, Component.literal("Fortifier").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.BLUE));
             ItemLore lore = ItemLore.EMPTY;
+            lore = lore.withLineAdded(Component.literal("[Architect Skill]").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.GREEN)));
             lore = lore.withLineAdded(Component.literal("30% chance to not consume durability.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Applies after unbreaking.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("The cobbler ability generates netherbrick instead.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
+            lore = lore.withLineAdded(Component.literal("Netherbricks are immune to the blast pickaxe").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Architects have a 40% chance to unbreak.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             out.set(DataComponents.LORE, lore);
             return out;
@@ -181,6 +186,7 @@ public enum Skill {
             ItemStack out = new ItemStack(Items.FIRE_CHARGE);
             out.set(DataComponents.ITEM_NAME, Component.literal("Blood Lust").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD));
             ItemLore lore = ItemLore.EMPTY;
+            lore = lore.withLineAdded(Component.literal("[Slayer Skill]").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.GREEN)));
             lore = lore.withLineAdded(Component.literal("Killing an entity grants 7 seconds of Strength and Swiftness.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Duration for Slayers increased to 10.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             out.set(DataComponents.LORE, lore);
@@ -201,6 +207,7 @@ public enum Skill {
             ItemStack out = new ItemStack(Items.TURTLE_SCUTE);
             out.set(DataComponents.ITEM_NAME, Component.literal("Bulwark").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD));
             ItemLore lore = ItemLore.EMPTY;
+            lore = lore.withLineAdded(Component.literal("[Slayer Skill]").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.GREEN)));
             lore = lore.withLineAdded(Component.literal("Blocking an attack grants 3 seconds of Resistance.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Works even if the attack has broken the shield.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Essentially a brief 20% damage reduction.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
@@ -220,6 +227,7 @@ public enum Skill {
             ItemStack out = new ItemStack(Items.ARROW);
             out.set(DataComponents.ITEM_NAME, Component.literal("Scrounger").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GREEN));
             ItemLore lore = ItemLore.EMPTY;
+            lore = lore.withLineAdded(Component.literal("[Ranger Skill]").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.GREEN)));
             lore = lore.withLineAdded(Component.literal("20% chance per second to generate an arrow").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("50% chance for rangers").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             out.set(DataComponents.LORE, lore);
@@ -263,6 +271,7 @@ public enum Skill {
             ItemStack out = new ItemStack(Items.ENDER_EYE);
             out.set(DataComponents.ITEM_NAME, Component.literal("Sixth Sense").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GREEN));
             ItemLore lore = ItemLore.EMPTY;
+            lore = lore.withLineAdded(Component.literal("[Ranger Skill]").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.GREEN)));
             lore = lore.withLineAdded(Component.literal("Players and mobs within a 6 block radius will glow.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Sneaking players are undetected.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
             lore = lore.withLineAdded(Component.literal("Range is increased by 2 for rangers.").withStyle(Style.EMPTY.withItalic(false).withColor(ChatFormatting.YELLOW)));
@@ -277,7 +286,7 @@ public enum Skill {
                     continue;
                 }
                 if(living instanceof ServerPlayer sp){
-                    if(sp.isCrouching() || sp == player){
+                    if(sp.isCrouching() || TeamState.get(sp) == TeamState.get(player)){
                         continue;
                     }
                 }

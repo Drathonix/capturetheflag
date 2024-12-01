@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -84,6 +85,13 @@ public abstract class MixinArmorStand extends MixinLivingEntity implements IMixi
     public void marker(CallbackInfoReturnable<Boolean> cir){
         if(ctf$isSpecial()){
             cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = "kill",at = @At("RETURN"))
+    public void onKill(ServerLevel serverLevel, CallbackInfo ci){
+        if(ctf$isSpecial()){
+            ArmorStandMarkers.remove(ArmorStand.class.cast(this),ctf$marker);
         }
     }
 

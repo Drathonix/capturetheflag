@@ -35,9 +35,5 @@ public class ParkourCrate implements ArmorStandModifier{
     public void onLoad(ArmorStand stand, String marker) {
         stand.setInvisible(true);
         stand.setInvulnerable(true);
-       // if (stand instanceof IMixinArmorStand mixin) {
-           // Vec3 p = mixin.ctf$getTruePosition();
-           //stand.setPos(p.add(-0.5));
-       // }
     }
 }

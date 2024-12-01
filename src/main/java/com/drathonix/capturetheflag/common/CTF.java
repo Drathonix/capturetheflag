@@ -89,6 +89,7 @@ public class CTF {
             });
             type.onRespawn(sp);
         });
+        data.onRespawn();
     }
 
     public static <T extends Component> T parseComponent(String json){

@@ -168,10 +168,10 @@ public class GameDataCache {
         else{
             phase.onTick(periodSeconds);
         }
-        periodSeconds++;
         if(periodSeconds%300 == 0){
             DidYouKnow.announce();
         }
+        periodSeconds++;
         CTFScoreboard.tick(server);
     }
 
@@ -183,8 +183,8 @@ public class GameDataCache {
             tickSecond(server);
         }
         ServerLevel world = server.overworld();
-        for (ParkourChamber chamber : parkourChambers) {
-            chamber.tick(world);
+        for (int i = 0; i < parkourChambers.size(); i++) {
+            parkourChambers.get(i).tick(world);
         }
         if(GameGenerator.parkourGenerator.needsUpdate()) {
             GameGenerator.parkourGenerator.addGDCs(server.overworld());
@@ -205,14 +205,16 @@ public class GameDataCache {
         }
         for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
             player.getInventory().clearContent();
-            if(CTFPlayerData.get(player).getTeamState() == null){
+            CTFPlayerData data = CTFPlayerData.get(player);
+            if(data.getTeamState() == null){
                 player.setGameMode(GameType.SPECTATOR);
             }
             else{
-                CTFPlayerData.get(player).requireClassType(c->{
+                data.requireClassType(c->{
                     CTF.respawn(player);
                 });
                 player.giveExperienceLevels(CTFConfig.startingLevels);
+                player.setGameMode(GameType.SURVIVAL);
             }
         }
         CTF.server.overworld().setDayTime(6000);

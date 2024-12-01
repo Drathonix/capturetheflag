@@ -3,6 +3,7 @@ package com.drathonix.capturetheflag.common.system;
 import com.drathonix.capturetheflag.common.CTF;
 import com.drathonix.capturetheflag.common.system.crystals.Crystal;
 import com.drathonix.capturetheflag.common.system.parkour.ParkourGenerator;
+import com.drathonix.capturetheflag.common.system.parkour.WaitingParkourChamber;
 import com.drathonix.capturetheflag.common.util.Quadrant;
 import com.drathonix.capturetheflag.common.util.regis.BlockRetriever;
 import com.vicious.persist.annotations.PersistentPath;
@@ -16,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -176,10 +178,15 @@ public class GameGenerator {
 
     public static class WaitingBoxGenerator {
         @Save
-        public int radius = 9;
+        public int radius = 54;
 
         @Save
-        public int height = 7;
+        public int height = 54;
+
+        @Save
+        public BlockPos parkourChamberOffset = new BlockPos(0,1,0);
+
+        private WaitingParkourChamber wpc;
 
         @Save
         public int y = 200;
@@ -195,12 +202,16 @@ public class GameGenerator {
             for (ServerPlayer player : CTF.server.getPlayerList().getPlayers()) {
                 Vec3 dest = new Vec3(center.above());
                 player.teleportTo(dest.x,dest.y,dest.z);
+                player.setGameMode(GameType.ADVENTURE);
             }
+            wpc = new WaitingParkourChamber(level,center.offset(parkourChamberOffset));
+            wpc.init();
         }
 
         public synchronized void ungenerate(ServerLevel level, BlockPos center){
             center = center.atY(y);
             generate(level,radius,height,radius,center,Blocks.AIR.defaultBlockState());
+            wpc.destroy();
         }
 
         private static void generate(Level world, int radiusx, int heighty, int radiusz, BlockPos center, BlockState data){
@@ -385,6 +396,21 @@ public class GameGenerator {
         if(type != null) {
             GameDataCache.protect(box, type, TeamState.byQuadrant(quadrant));
         }
+        template.placeInWorld(level, pos, pos, settings,RANDOM,2);
+        return box;
+    }
+
+    public static BoundingBox generateRuleless(ServerLevel level, BlockPos pos, StructureTemplate template) {
+        StructurePlaceSettings settings = new StructurePlaceSettings();
+        BoundingBox box = template.getBoundingBox(settings,pos);
+        template.placeInWorld(level, pos, pos, settings,RANDOM,2);
+        return box;
+    }
+
+    public static BoundingBox generateRuleless(ServerLevel level, BlockPos pos, StructureTemplate template, Rotation rotation) {
+        StructurePlaceSettings settings = new StructurePlaceSettings();
+        settings = settings.setRotation(rotation);
+        BoundingBox box = template.getBoundingBox(settings,pos);
         template.placeInWorld(level, pos, pos, settings,RANDOM,2);
         return box;
     }

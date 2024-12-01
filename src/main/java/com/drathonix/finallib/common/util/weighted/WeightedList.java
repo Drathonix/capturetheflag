@@ -1,6 +1,8 @@
 package com.drathonix.finallib.common.util.weighted;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 public class WeightedList<E extends IWeighted> extends ArrayList<E> {
@@ -14,6 +16,17 @@ public class WeightedList<E extends IWeighted> extends ArrayList<E> {
     public WeightedList(WeightedList<E> options) {
         super(options);
         sum=options.sum;
+    }
+    public WeightedList(List<E> options) {
+        this.addAll(options);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends E> c) {
+        for (E e : c) {
+            add(e);
+        }
+        return true;
     }
 
     @Override

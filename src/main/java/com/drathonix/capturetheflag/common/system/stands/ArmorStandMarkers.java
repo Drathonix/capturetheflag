@@ -78,4 +78,9 @@ public class ArmorStandMarkers {
         registerModifier(parkourStartChampion, new ParkourStart(ParkourDifficulty.CHAMPION));
         registerModifier(parkourCrate, new ParkourCrate());
     }
+
+    public static void remove(ArmorStand armorStand, String flag) {
+        flag = cleanFlag(flag);
+        markedStands.computeIfAbsent(flag, k -> new ArrayList<>()).add(armorStand);
+    }
 }
